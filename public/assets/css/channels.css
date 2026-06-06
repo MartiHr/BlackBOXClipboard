@@ -111,6 +111,7 @@
 
 .empty-card:hover {
     border-color: var(--primary);
+    text-decoration: none;
 }
 
 .icon-circle {

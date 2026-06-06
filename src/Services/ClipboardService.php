@@ -63,4 +63,9 @@ class ClipboardService
     {
         return $this->typeRepo->getAllTypes();
     }
+
+    public function getAllClipboards(): array
+    {
+        return $this->clipRepo->getAll();
+    }
 }

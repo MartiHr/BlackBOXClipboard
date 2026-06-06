@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/Core/BaseRepository.php';
+
 class ClipboardRepository extends BaseRepository
 {
     public function create(array $data): int
@@ -29,5 +31,16 @@ class ClipboardRepository extends BaseRepository
                 ':resource_type_id' => $id
             ]);
         }
+    }
+
+    public function getAll(): array
+    {
+        $stmt = $this->query(
+            'SELECT id, name, description, owner_id, visibility, mode
+            FROM clipboards
+            ORDER BY id DESC'
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/Core/BaseRepository.php';
+
 class ResourceTypeRepository extends BaseRepository
 {
     public function existsMany(array $ids): array

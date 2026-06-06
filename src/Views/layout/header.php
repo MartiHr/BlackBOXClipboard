@@ -34,9 +34,6 @@
             <div class="header-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <span><?= htmlspecialchars($_SESSION['username']) ?></span>
-                    <?php if (!empty($showActions)): ?>
-                    <button class="btn btn-outline btn-icon-only" id="syncBtn"><span class="material-symbols-outlined">sync</span></button>
-                    <?php endif; ?>
                     <a href="/logout" class="btn btn-outline">Изход</a>
                 <?php else: ?>
                     <a href="/login" class="btn btn-outline">Вход</a>

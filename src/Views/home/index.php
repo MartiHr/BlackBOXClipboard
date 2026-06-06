@@ -1,17 +1,13 @@
         <section class="dashboard-header">
             <div>
-                <div class="status-indicator">
-                    <div class="pulse-dot"></div>
-                    <span class="status-text">Всички системи работят</span>
-                </div>
                 <h1>Клипборди</h1>
                 <p class="dashboard-title-desc">
-                    Клинични хъбове за синхронизация в реално време за вашите клипборд фрагменти. Наблюдавайте състоянието и прехвърляйте данни между инстанции.
+                    Клипборди за синхронизация в реално време за вашите клипборд фрагменти. Наблюдавайте състоянието и прехвърляйте данни между инстанции.
                 </p>
             </div>
-            <button class="btn btn-primary btn-fit">
+            <a href="/clipboard/create" class="btn btn-primary btn-fit">
                 <span class="material-symbols-outlined">add</span> Нов клипборд
-            </button>
+            </a>
         </section>
 
         <section class="bento-grid">
@@ -35,14 +31,15 @@
                                 <span><?= htmlspecialchars(date('M j, Y', strtotime($c['created_at']))) ?></span>
                             </div>
                             <div class="stat-row">
-                                <span>Идентификатор:</span>
-                                <span><?= htmlspecialchars($c['slug']) ?></span>
+                                <span>Вид:</span>
+                                <span><?= $c['mode'] === 'multi' ? 'Множествен' : 'Единичен' ?></span>
                             </div>
                             <a href="/clipboard/<?= htmlspecialchars($c['slug']) ?>" class="btn btn-outline card-action-btn">Отвори</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
+                
                 <div class="channel-card">
                     <div class="card-top">
                         <div>
@@ -58,43 +55,14 @@
                     </div>
                 </div>
 
-                <div class="channel-card">
-                    <div class="card-top">
-                        <div>
-                            <span class="channel-status channel-status-standby">В режим на готовност</span>
-                            <h3>Staging_Vault</h3>
-                        </div>
-                        <span class="material-symbols-outlined">lock</span>
-                    </div>
-                    <div class="card-stats">
-                        <div class="stat-row"><span>Последна актуализация:</span><span>преди 1 час</span></div>
-                        <div class="stat-row"><span>Пакети:</span><span>42</span></div>
-                        <button class="btn btn-outline card-action-btn">Отвори</button>
-                    </div>
-                </div>
-
-                <div class="channel-card">
-                    <div class="card-top">
-                        <div>
-                            <span class="channel-status">Авто-синхр.</span>
-                            <h3>Mobile_Proxy</h3>
-                        </div>
-                        <span class="material-symbols-outlined">smartphone</span>
-                    </div>
-                    <div class="card-stats">
-                        <div class="stat-row"><span>Последна актуализация:</span><span>Току-що</span></div>
-                        <div class="stat-row"><span>Пакети:</span><span>8,912</span></div>
-                        <button class="btn btn-outline card-action-btn">Отвори</button>
-                    </div>
-                </div>
             <?php endif; ?>
 
-            <div class="empty-card">
+            <a href="/clipboard/create" class="empty-card">
                 <div class="icon-circle">
                     <span class="material-symbols-outlined">add</span>
                 </div>
                 <span class="empty-card-text">Нов клипборд</span>
-            </div>
+            </a>
         </section>
 
         <section class="stats-section">

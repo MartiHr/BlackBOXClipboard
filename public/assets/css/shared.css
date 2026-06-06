@@ -124,6 +124,13 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
+    text-decoration: none;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active {
+    text-decoration: none;
 }
 
 .btn-primary {
