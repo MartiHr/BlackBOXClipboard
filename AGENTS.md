@@ -6,7 +6,7 @@ A web-based **data transformation pipeline** called "Shared/Distributed Clipboar
 ## 2. Tech Stack & Restrictions
 - **Backend:** Pure PHP 8+ (OOP where sensible, NO frameworks like Laravel/Symfony).
 - **Frontend:** HTML5, CSS3, Vanilla JS (ES6+) — NO React, Vue, Angular, jQuery.
-- **Database:** MySQL/MariaDB via PDO (prepared statements only).
+- **Database:** MySQL via PDO (prepared statements only).
 - **Architecture:** Light MVC or component-based — `public/` as entry point, `includes/` or `src/` for config, classes, and routing.
 - **Dependencies:** NO external libraries. No Composer, no NPM, no Tailwind/Bootstrap (unless standard CSS resets).
 
