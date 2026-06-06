@@ -19,16 +19,16 @@ class Router
     {
         if (!isset($this->routes[$page])) {
             http_response_code(404);
-            echo "<h1>404: Страницата не е намерена</h1>";
+            echo "<h1>404: Page not found</h1>";
             return;
         }
 
         [$controller, $action] = $this->routes[$page];
-        $file = __DIR__ . "/controllers/{$controller}.php";
+        $file = __DIR__ . "/Controllers/{$controller}.php";
 
         if (!file_exists($file)) {
             http_response_code(500);
-            echo "<h1>500: Контролерът {$controller} не съществува</h1>";
+            echo "<h1>500: Controller {$controller} does not exist</h1>";
             return;
         }
 
