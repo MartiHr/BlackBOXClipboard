@@ -74,10 +74,21 @@ class ClipboardService
         return $this->clipRepo->countAll();
     }
 
+    public function countClipboardsForUser(?int $userId): int
+    {
+        return $this->clipRepo->countForUser($userId);
+    }
+
     public function getClipboardsPage(int $page, int $perPage): array
     {
         $offset = ($page - 1) * $perPage;
         return $this->clipRepo->getPage($perPage, $offset);
+    }
+
+    public function getClipboardsPageForUser(?int $userId, int $page, int $perPage): array
+    {
+        $offset = ($page - 1) * $perPage;
+        return $this->clipRepo->getPageForUser($userId, $perPage, $offset);
     }
 
     public function getClipboardById(int $id): ?array

@@ -40,8 +40,6 @@ class ClipboardController extends Controller
 
     public function show(): void
     {
-        AuthService::requireLogin();
-
         $id = (int) ($_GET['id'] ?? 0);
         $clipboard = $this->service->getClipboardById($id);
 
@@ -51,20 +49,34 @@ class ClipboardController extends Controller
             return;
         }
 
+        $isPublic = ($clipboard['visibility'] ?? 'private') === 'public';
+        $isLoggedIn = AuthService::isLoggedIn();
+        $isOwner = $isLoggedIn && (int) $clipboard['owner_id'] === $_SESSION['user_id'];
+
+        if (!$isPublic) {
+            AuthService::requireLogin();
+            if (!$isOwner) {
+                http_response_code(403);
+                echo 'Достъпът е отказан';
+                return;
+            }
+        }
+
         $itemLimit = ($clipboard['mode'] ?? 'multi') === 'single' ? 1 : 50;
         $items = $this->service->getClipboardItems($id, $itemLimit);
 
-        $isOwner = AuthService::isLoggedIn() && (int) $clipboard['owner_id'] === $_SESSION['user_id'];
+        $canPost = $isLoggedIn && ($isPublic || $isOwner);
 
         $this->render('clipboard/show', [
-            'clipboard'  => $clipboard,
-            'items'      => $items,
-            'isOwner'    => $isOwner,
-            'extraCss'   => ['auth.css', 'show.css'],
-            'showNav'    => true,
-            'showActions' => true,
+            'clipboard'   => $clipboard,
+            'items'       => $items,
+            'isOwner'     => $isOwner,
+            'canPost'     => $canPost,
+            'extraCss'    => ['auth.css', 'show.css'],
+            'showNav'     => $isLoggedIn,
+            'showActions' => $isLoggedIn,
             'currentPage' => 'clipboard',
-            'mainClass'  => 'clipboard-main',
+            'mainClass'   => 'clipboard-main',
         ], 'Клипборд: ' . htmlspecialchars($clipboard['name']));
     }
 

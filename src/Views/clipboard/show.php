@@ -30,8 +30,14 @@
                     <span class="meta-label">Обекти</span>
                     <strong><?= count($items) ?></strong>
                 </div>
+                <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
+                <button class="btn btn-outline btn-fit share-url-btn" title="Копирай връзката">
+                    <span class="material-symbols-outlined">share</span> Сподели
+                </button>
+                <?php endif; ?>
             </div>
 
+            <?php if ($canPost): ?>
             <div class="input-section">
                 <textarea id="pasteInput" placeholder="Пейстни текст, линк или код тук..."></textarea>
                 <input type="file" id="fileInput" accept="text/*,image/*,.pdf,.zip,.csv,.json,.xml,.sql" style="display:none">
@@ -45,6 +51,7 @@
                     <button class="btn btn-primary btn-fit" id="shareBtn">Сподели</button>
                 </div>
             </div>
+            <?php endif; ?>
 
             <div class="items-section">
                 <div class="items-header">
@@ -56,7 +63,7 @@
                 <div class="empty-state">
                     <span class="material-symbols-outlined">content_paste</span>
                     <h3>Все още няма споделяния</h3>
-                    <p>Постави нещо в полето отгоре и натисни "Сподели".</p>
+                    <p><?= $canPost ? 'Постави нещо в полето отгоре и натисни "Сподели".' : 'Все още няма споделяния в този публичен клипборд.' ?></p>
                 </div>
                 <?php else: ?>
                 <div class="items-feed">
@@ -322,6 +329,19 @@
             function hideDeleteModal() {
                 document.getElementById('delete-modal').classList.remove('open');
                 pendingDeleteId = null;
+            }
+
+            var shareBtn = document.querySelector('.share-url-btn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    var url = window.location.href;
+                    navigator.clipboard.writeText(url).then(function() {
+                        var orig = this.innerHTML;
+                        this.innerHTML = '<span class="material-symbols-outlined">check</span> Копиран!';
+                        var self = this;
+                        setTimeout(function() { self.innerHTML = orig; }, 2000);
+                    }.bind(this));
+                });
             }
 
             document.querySelectorAll('.delete-item-btn').forEach(btn => {

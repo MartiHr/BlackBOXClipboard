@@ -265,6 +265,14 @@
     color: #dc2626;
 }
 
+.share-url-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
 .modal-overlay {
     display: none;
     position: fixed;

@@ -50,6 +50,19 @@ class ClipboardRepository extends BaseRepository
         return (int) $stmt->fetchColumn();
     }
 
+    public function countForUser(?int $userId): int
+    {
+        if ($userId) {
+            $stmt = $this->query(
+                'SELECT COUNT(*) FROM clipboards WHERE visibility = "public" OR owner_id = :owner_id',
+                [':owner_id' => $userId]
+            );
+        } else {
+            $stmt = $this->query('SELECT COUNT(*) FROM clipboards WHERE visibility = "public"');
+        }
+        return (int) $stmt->fetchColumn();
+    }
+
     public function getPage(int $limit, int $offset): array
     {
         $stmt = $this->query(
@@ -62,6 +75,38 @@ class ClipboardRepository extends BaseRepository
                 ':offset' => $offset,
             ]
         );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getPageForUser(?int $userId, int $limit, int $offset): array
+    {
+        if ($userId) {
+            $stmt = $this->query(
+                'SELECT id, name, description, owner_id, visibility, mode, created_at
+                FROM clipboards
+                WHERE visibility = "public" OR owner_id = :owner_id
+                ORDER BY id DESC
+                LIMIT :limit OFFSET :offset',
+                [
+                    ':owner_id' => $userId,
+                    ':limit' => $limit,
+                    ':offset' => $offset,
+                ]
+            );
+        } else {
+            $stmt = $this->query(
+                'SELECT id, name, description, owner_id, visibility, mode, created_at
+                FROM clipboards
+                WHERE visibility = "public"
+                ORDER BY id DESC
+                LIMIT :limit OFFSET :offset',
+                [
+                    ':limit' => $limit,
+                    ':offset' => $offset,
+                ]
+            );
+        }
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
