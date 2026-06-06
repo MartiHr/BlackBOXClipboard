@@ -31,16 +31,23 @@ class AuthController extends Controller
         $this->render('auth/login', ['error' => $error], 'Вход');
     }
 
+    public function logout(): void 
+    {
+        $this->authService->logout();
+        $this->redirect('home');
+    }
+
     public function register(): void 
     {
         $message = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['username'] ?? '';
+            $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            if ($this->authService->register($username, $password)) {
-                $message = "<p style='color:green;'>Регистрацията е успешна! <a href='index.php?page=login'>Влезте оттук</a></p>";
+            if ($this->authService->register($username, $email, $password)) {
+                $message = "<p style='color:green;'>Регистрацията е успешна! <a href='/'>Влезте оттук</a></p>";
             } else {
                 $message = "<p style='color:red;'>Потребителското име е заето или възникна грешка!</p>";
             }

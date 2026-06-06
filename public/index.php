@@ -16,6 +16,7 @@ $router = new Router($pdo);
 $router->add('home', 'HomeController', 'index');
 $router->add('login', 'AuthController', 'login');         // Показва формата за вход
 $router->add('register', 'AuthController', 'register');   // Показва формата за регистрация
+$router->add('logout', 'AuthController', 'logout');      // Изход от системата
 // $router->add('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->add('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 

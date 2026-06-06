@@ -13,19 +13,18 @@ class AuthService
     /**
      * Регистрация на нов потребител със защитена парола
      */
-    public function register(string $username, string $password): bool 
+    public function register(string $username, string $email, string $password): bool 
     {
-        // Хешираме паролата с индустриалния стандарт BCrypt
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         
         try {
-            $stmt = $this->db->prepare("INSERT INTO users (username, password_hash) VALUES (:username, :password_hash)");
+            $stmt = $this->db->prepare("INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
             return $stmt->execute([
                 ':username' => trim($username),
+                ':email' => trim($email),
                 ':password_hash' => $hashedPassword
             ]);
         } catch (PDOException $e) {
-            // Ако потребителят вече съществува (Unique constraint)
             return false;
         }
     }

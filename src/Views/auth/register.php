@@ -5,7 +5,8 @@
 <?php endif; ?>
 
 <form method="POST">
-    <input type="text" name="username" placeholder="Изберете потребителско име" required><br><br>
-    <input type="password" name="password" placeholder="Изберете парола" required><br><br>
+    <input type="text" name="username" placeholder="Потребителско име" required><br><br>
+    <input type="email" name="email" placeholder="Имейл" required><br><br>
+    <input type="password" name="password" placeholder="Парола" required><br><br>
     <button type="submit">Регистрирай ме</button>
 </form>
