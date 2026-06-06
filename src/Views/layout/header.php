@@ -28,7 +28,7 @@
             <?php if (!empty($showNav)): ?>
             <nav class="nav-links">
                 <a href="/" <?= ($currentPage === 'home') ? 'class="active"' : '' ?>>Клипборди</a>
-                <a href="#">Нов клипборд</a>
+                <a href="/clipboard/create">Нов клипборд</a>
             </nav>
             <?php endif; ?>
             <div class="header-actions">

@@ -28,7 +28,12 @@ class ClipboardController extends Controller
         $types = $this->service->getAllResourceTypes();
 
         $this->render('clipboard/create', [
-            'resourceTypes' => $types
+            'resourceTypes' => $types,
+            'extraCss'      => ['auth.css', 'create.css'],
+            'showNav'       => true,
+            'showActions'   => true,
+            'currentPage'   => 'create',
+            'mainClass'     => 'create-main',
         ], 'Create Clipboard');
     }
 
