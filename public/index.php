@@ -25,6 +25,7 @@ $router->get('home', 'HomeController', 'index');
 $router->get('clipboard', 'ClipboardController', 'show');
 $router->get('clipboard/create', 'ClipboardController', 'createGet');
 $router->post('clipboard/create', 'ClipboardController', 'create');
+$router->post('clipboard/item/create', 'ClipboardController', 'createItem');
 $router->get('login', 'AuthController', 'loginGet');
 $router->post('login', 'AuthController', 'loginPost');
 $router->get('register', 'AuthController', 'registerGet');
