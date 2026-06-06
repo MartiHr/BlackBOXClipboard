@@ -1,25 +1,24 @@
 <?php
+// controllers/HomeController.php
+
 class HomeController
 {
-    private $pdo;
+    private PDO $db;
 
-    public function __construct($pdo = null)
+    // Конструкторът хваща базата, която Рутерът му подаде при "new HomeController($this->pdo)"
+    public function __construct(PDO $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
-    public function index()
+    public function index(): void
     {
-        $view = __DIR__ . '/../views/home.php';
-        if (file_exists($view)) {
-            include $view;
-            return;
-        }
+        // Базата вече е тук! Можеш да я ползваш за SQL заявки:
+        // $stmt = $this->db->query("SELECT * FROM clipboards WHERE visibility = 'public'");
+        // $publicClipboards = $stmt->fetchAll();
 
-        // Fallback simple HTML if no view file exists
-        echo '<!doctype html><html><head><meta charset="utf-8"><title>Home</title></head><body>';
-        echo '<h1>Welcome</h1>';
-        echo '<p>This is the Home page.</p>';
-        echo '</body></html>';
+        // Показваш изгледа на потребителя
+        echo "<h1>Добре дошли в BlackBOX Clipboard!</h1>";
+        // echo "Публични канали в базата: " . count($publicClipboards);
     }
 }
