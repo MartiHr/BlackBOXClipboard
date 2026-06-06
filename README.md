@@ -4,4 +4,4 @@
 4. docker compose down (to remove the process)
 
 run app
-1. php -S 0.0.0.0:8000 -t src
+1. php -S 0.0.0.0:8000 -t public
