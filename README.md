@@ -5,3 +5,7 @@
 
 run app
 1. php -S 0.0.0.0:8000 -t src
+
+migrations
+0. Open php.ini and uncomment extension=pdo_mysql
+1. php src/Database/migrate.php
