@@ -6,7 +6,7 @@
     <?php if (!empty($clipboards)): ?>
         <?php foreach ($clipboards as $c): ?>
             <li>
-                <a href="index.php?page=clipboard&slug=<?= htmlspecialchars($c['slug']) ?>">
+                <a href="/home/clipboard/<?= htmlspecialchars($c['slug']) ?>">
                     <?= htmlspecialchars($c['name']) ?>
                 </a>
             </li>
