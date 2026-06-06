@@ -37,6 +37,41 @@ class ClipboardController extends Controller
         ], 'Create Clipboard');
     }
 
+    public function show(): void
+    {
+        AuthService::requireLogin();
+
+        $id = (int) ($_GET['id'] ?? 0);
+        $clipboard = $this->service->getClipboardById($id);
+
+        if (!$clipboard) {
+            header('HTTP/1.0 404 Not Found');
+            echo 'Clipboard not found';
+            return;
+        }
+
+        $items = $this->service->getClipboardItems($id, 10);
+        $formattedItems = array_map(function ($item) {
+            return [
+                'title' => htmlspecialchars(substr($item['title'] ?? '', 0, 50)),
+                'type' => htmlspecialchars($item['type'] ?? 'text'),
+                'summary' => htmlspecialchars(substr($item['title'] ?? '', 0, 100)),
+                'timestamp' => $item['created_at'] ? date('j M H:i', strtotime($item['created_at'])) : 'unknown',
+                'status' => 'Активен',
+            ];
+        }, $items);
+
+        $this->render('clipboard/show', [
+            'clipboard' => $clipboard,
+            'items' => $formattedItems,
+            'extraCss' => ['auth.css', 'create.css'],
+            'showNav' => true,
+            'showActions' => true,
+            'currentPage' => 'clipboard',
+            'mainClass' => 'clipboard-main',
+        ], 'Клипборд: ' . htmlspecialchars($clipboard['name']));
+    }
+
     public function create()
     {
         header('Content-Type: application/json');

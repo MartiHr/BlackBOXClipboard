@@ -79,4 +79,14 @@ class ClipboardService
         $offset = ($page - 1) * $perPage;
         return $this->clipRepo->getPage($perPage, $offset);
     }
+
+    public function getClipboardById(int $id): ?array
+    {
+        return $this->clipRepo->getById($id);
+    }
+
+    public function getClipboardItems(int $clipboardId, int $limit = 10): array
+    {
+        return $this->clipRepo->getItemsByClipboardId($clipboardId, $limit);
+    }
 }

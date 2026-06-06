@@ -65,4 +65,35 @@ class ClipboardRepository extends BaseRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getById(int $id): ?array
+    {
+        $stmt = $this->query(
+            'SELECT id, name, description, owner_id, visibility, mode, created_at
+            FROM clipboards
+            WHERE id = :id',
+            [':id' => $id]
+        );
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
+    public function getItemsByClipboardId(int $clipboardId, int $limit = 10): array
+    {
+        $stmt = $this->query(
+            'SELECT csi.id, csi.title, csi.content, rt.name as type, csi.created_at
+            FROM clipboard_share_items csi
+            LEFT JOIN resource_types rt ON csi.resource_type_id = rt.id
+            WHERE csi.clipboard_id = :clipboard_id
+            ORDER BY csi.created_at DESC
+            LIMIT :limit',
+            [
+                ':clipboard_id' => $clipboardId,
+                ':limit' => $limit,
+            ]
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
