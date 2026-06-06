@@ -4,8 +4,10 @@
 4. docker compose down (to remove the process)
 
 run app
-1. php -S 0.0.0.0:8000 -t src
+
+1. php -S 0.0.0.0:8000 -t public
 
 migrations
+
 0. Open php.ini and uncomment extension=pdo_mysql
 1. php src/Database/migrate.php
