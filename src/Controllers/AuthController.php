@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         // Ако формата е изпратена (POST заявка)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = $_getPost['username'] ?? ''; // Тук си взимаш данните от формата
+            $username = $_POST['username'] ?? ''; // Тук си взимаш данните от формата
             $password = $_POST['password'] ?? '';
 
             if ($this->authService->login($username, $password)) {

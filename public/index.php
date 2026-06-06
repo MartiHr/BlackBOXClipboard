@@ -19,8 +19,10 @@ $router->add('register', 'AuthController', 'register');   // Показва фо
 // $router->add('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->add('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 
-// 4. ОПРЕДЕЛЯМЕ ТЕКУЩАТА СТРАНИЦА
-$page = $_GET['page'] ?? 'home';
+// 4. ОПРЕДЕЛЯМЕ ТЕКУЩАТА СТРАНИЦА от URL
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = trim($uri, '/');
+$page = $uri ?: ($_GET['page'] ?? 'home');
 
 // 5. ИЗПЪЛНЕНИЕ
 // Рутерът сам ще направи "new AuthController($pdo)" и ще извика правилния метод!
