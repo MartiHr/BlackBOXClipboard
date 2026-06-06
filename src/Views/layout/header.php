@@ -4,19 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'BlackBOX Clipboard') ?></title>
-    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/shared.css">
+    <?php if (!empty($extraCss)): ?>
+        <?php foreach ((array) $extraCss as $css): ?>
+            <link rel="stylesheet" href="/assets/css/<?= htmlspecialchars($css) ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/">Начало</a>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <span>Здравей, <?= htmlspecialchars($_SESSION['username']) ?>!</span>
-                <a href="/logout">Изход</a>
-            <?php else: ?>
-                <a href="/login">Вход</a>
-                <a href="/register">Регистрация</a>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="brand-logo">
+                <span>BlackBOX</span>
+                <?php if (!empty($showStatus)): ?>
+                <div class="status-indicator">
+                    <div class="pulse-dot"></div>
+                    <span class="status-text"><?= htmlspecialchars($statusText ?? 'Синхр. активно') ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php if (!empty($showNav)): ?>
+            <nav class="nav-links">
+                <a href="/" <?= ($currentPage === 'home') ? 'class="active"' : '' ?>>Клипборди</a>
+                <a href="#">Нов клипборд</a>
+            </nav>
             <?php endif; ?>
-        </nav>
+            <div class="header-actions">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span><?= htmlspecialchars($_SESSION['username']) ?></span>
+                    <?php if (!empty($showActions)): ?>
+                    <button class="btn btn-outline btn-icon-only" id="syncBtn"><span class="material-symbols-outlined">sync</span></button>
+                    <?php endif; ?>
+                    <a href="/logout" class="btn btn-outline">Изход</a>
+                <?php else: ?>
+                    <a href="/login" class="btn btn-outline">Вход</a>
+                    <a href="/register" class="btn btn-primary">Регистрация</a>
+                <?php endif; ?>
+            </div>
+        </div>
     </header>
-    <main>
+    <main class="<?= htmlspecialchars($mainClass ?? 'dashboard-main') ?>">

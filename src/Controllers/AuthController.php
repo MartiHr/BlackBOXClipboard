@@ -18,7 +18,15 @@ class AuthController extends Controller
 
     public function loginGet(): void
     {
-        $this->render('auth/login', ['error' => ''], 'Вход');
+        $this->render('auth/login', [
+            'error'      => '',
+            'extraCss'   => ['auth.css'],
+            'showNav'    => false,
+            'showActions' => false,
+            'showStatus' => true,
+            'statusText' => 'Синхр. активно',
+            'mainClass'  => 'main-content',
+        ], 'Вход');
     }
 
     public function loginPost(): void
@@ -40,7 +48,15 @@ class AuthController extends Controller
             $error = 'Невалидно потребителско име или парола!';
         }
 
-        $this->render('auth/login', ['error' => $error], 'Вход');
+        $this->render('auth/login', [
+            'error'      => $error,
+            'extraCss'   => ['auth.css'],
+            'showNav'    => false,
+            'showActions' => false,
+            'showStatus' => true,
+            'statusText' => 'Синхр. активно',
+            'mainClass'  => 'main-content',
+        ], 'Вход');
     }
 
     public function logout(): void 
@@ -51,7 +67,13 @@ class AuthController extends Controller
 
     public function registerGet(): void
     {
-        $this->render('auth/register', ['message' => ''], 'Регистрация');
+        $this->render('auth/register', [
+            'message'     => '',
+            'extraCss'    => ['auth.css'],
+            'showNav'     => true,
+            'showActions' => true,
+            'mainClass'   => 'main-content',
+        ], 'Регистрация');
     }
 
     public function registerPost(): void
@@ -83,6 +105,12 @@ class AuthController extends Controller
                 $message = "<p style='color:red;'>Грешка при регистрация. Опитайте отново.</p>";
         }
 
-        $this->render('auth/register', ['message' => $message], 'Регистрация');
+        $this->render('auth/register', [
+            'message'     => $message,
+            'extraCss'    => ['auth.css'],
+            'showNav'     => true,
+            'showActions' => true,
+            'mainClass'   => 'main-content',
+        ], 'Регистрация');
     }
 }

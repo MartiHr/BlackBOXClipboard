@@ -20,10 +20,9 @@ abstract class Controller
     protected function render(string $view, array $data = [], string $title = 'BlackBOX Clipboard'): void
     {
         $data['title'] = $title;
+        extract($data);
 
         require $this->viewsPath . '/layout/header.php';
-
-        extract($data);
         require $this->viewsPath . '/' . $view . '.php';
 
         require $this->viewsPath . '/layout/footer.php';
