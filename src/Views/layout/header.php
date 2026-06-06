@@ -12,6 +12,11 @@
             <link rel="stylesheet" href="/assets/css/<?= htmlspecialchars($css) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+    <?php if (!empty($extraJs)): ?>
+        <?php foreach ((array) $extraJs as $js): ?>
+            <script src="/assets/js/<?= htmlspecialchars($js) ?>" defer></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </head>
 <body>
     <header class="main-header">

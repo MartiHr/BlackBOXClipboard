@@ -19,13 +19,15 @@ class AuthController extends Controller
     public function loginGet(): void
     {
         $this->render('auth/login', [
-            'error'      => '',
-            'extraCss'   => ['auth.css'],
-            'showNav'    => false,
+            'error'       => '',
+            'extraCss'    => ['auth.css'],
+            'extraJs'     => ['auth.js'],
+            'showNav'     => false,
             'showActions' => false,
-            'showStatus' => true,
-            'statusText' => 'Синхр. активно',
-            'mainClass'  => 'main-content',
+            'showStatus'  => true,
+            'statusText'  => 'Синхр. активно',
+            'currentPage' => 'login',
+            'mainClass'   => 'main-content',
         ], 'Вход');
     }
 
@@ -49,13 +51,14 @@ class AuthController extends Controller
         }
 
         $this->render('auth/login', [
-            'error'      => $error,
-            'extraCss'   => ['auth.css'],
-            'showNav'    => false,
+            'error'       => $error,
+            'extraCss'    => ['auth.css'],
+            'extraJs'     => ['auth.js'],
+            'showNav'     => false,
             'showActions' => false,
-            'showStatus' => true,
-            'statusText' => 'Синхр. активно',
-            'mainClass'  => 'main-content',
+            'showStatus'  => true,
+            'statusText'  => 'Синхр. активно',
+            'mainClass'   => 'main-content',
         ], 'Вход');
     }
 
@@ -70,8 +73,12 @@ class AuthController extends Controller
         $this->render('auth/register', [
             'message'     => '',
             'extraCss'    => ['auth.css'],
-            'showNav'     => true,
-            'showActions' => true,
+            'extraJs'     => ['auth.js'],
+            'showNav'     => false,
+            'showActions' => false,
+            'showStatus'  => true,
+            'statusText'  => 'Синхр. активно',
+            'currentPage' => 'register',
             'mainClass'   => 'main-content',
         ], 'Регистрация');
     }
@@ -108,8 +115,12 @@ class AuthController extends Controller
         $this->render('auth/register', [
             'message'     => $message,
             'extraCss'    => ['auth.css'],
-            'showNav'     => true,
-            'showActions' => true,
+            'extraJs'     => ['auth.js'],
+            'showNav'     => false,
+            'showActions' => false,
+            'showStatus'  => true,
+            'statusText'  => 'Синхр. активно',
+            'currentPage' => 'register',
             'mainClass'   => 'main-content',
         ], 'Регистрация');
     }

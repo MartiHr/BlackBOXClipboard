@@ -121,3 +121,17 @@
     opacity: 0.6;
     font-size: 12px;
 }
+
+.is-invalid {
+    border-color: #dc2626 !important;
+}
+
+.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+.field-error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+}
