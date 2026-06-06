@@ -22,6 +22,8 @@ $router = new Router($pdo);
 // Начин на писане: add('име_в_URL', 'ИмеНаКонтролер', 'метод_в_контролера')
 
 $router->get('home', 'HomeController', 'index');
+$router->get('clipboard/create', 'ClipboardController', 'createGet');
+$router->post('clipboard/create', 'ClipboardController', 'create');
 $router->get('login', 'AuthController', 'loginGet');
 $router->post('login', 'AuthController', 'loginPost');
 $router->get('register', 'AuthController', 'registerGet');
