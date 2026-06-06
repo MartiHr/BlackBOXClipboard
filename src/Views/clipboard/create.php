@@ -47,7 +47,7 @@
                             <?php if (!empty($resourceTypes)): ?>
                                 <?php foreach ($resourceTypes as $type): ?>
                                 <label class="resource-option" style="border-color:">
-                                    <input type="checkbox" name="types[]" value="<?= htmlspecialchars($type['id']) ?>" checked>
+                                    <input type="checkbox" name="types[]" value="<?= htmlspecialchars($type['id']) ?>">
                                     <div class="resource-info">
                                         <span class="resource-label"><?= htmlspecialchars($type['name']) ?></span>
                                     </div>
@@ -55,14 +55,14 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <label class="resource-option">
-                                    <input type="checkbox" name="types[]" value="1" checked>
+                                    <input type="checkbox" name="types[]" value="1">
                                     <div class="resource-info">
                                         <span class="resource-label">Текст</span>
                                         <span class="resource-desc">Бележки и фрагменти</span>
                                     </div>
                                 </label>
                                 <label class="resource-option">
-                                    <input type="checkbox" name="types[]" value="2" checked>
+                                    <input type="checkbox" name="types[]" value="2">
                                     <div class="resource-info">
                                         <span class="resource-label">Изображение</span>
                                         <span class="resource-desc">Визуални файлове</span>
@@ -88,7 +88,7 @@
 
                     <div class="safety-notice">
                         <span class="material-symbols-outlined safety-icon">verified_user</span>
-                        <p class="safety-text"><strong>Сигурно предаване:</strong> Всички данни в този клипборд са защитени с AES-256 криптиране тип край-до-край. Само оторизирани устройства могат да декриптират и достъпят съдържанието.</p>
+                        <p class="safety-text"><strong>Сигурно предаване:</strong> Съдържанието в този клипборд е достъпно само за потребители с необходимите права за достъп. Всички действия се валидират от системата и се записват в историята на клипборда.</p>
                     </div>
 
                     <div class="form-actions">
