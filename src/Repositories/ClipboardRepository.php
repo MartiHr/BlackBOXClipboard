@@ -36,9 +36,31 @@ class ClipboardRepository extends BaseRepository
     public function getAll(): array
     {
         $stmt = $this->query(
-            'SELECT id, name, description, owner_id, visibility, mode
+            'SELECT id, name, description, owner_id, visibility, mode, created_at
             FROM clipboards
             ORDER BY id DESC'
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countAll(): int
+    {
+        $stmt = $this->query('SELECT COUNT(*) FROM clipboards');
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function getPage(int $limit, int $offset): array
+    {
+        $stmt = $this->query(
+            'SELECT id, name, description, owner_id, visibility, mode, created_at
+            FROM clipboards
+            ORDER BY id DESC
+            LIMIT :limit OFFSET :offset',
+            [
+                ':limit' => $limit,
+                ':offset' => $offset,
+            ]
         );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

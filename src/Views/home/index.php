@@ -17,7 +17,7 @@
                         <div class="card-top">
                             <div>
                                 <span class="channel-status <?= $c['visibility'] === 'private' ? 'channel-status-standby' : '' ?>">
-                                    <?= $c['visibility'] === 'private' ? 'Частен' : 'Публичен' ?> хъб
+                                    <?= $c['visibility'] === 'private' ? 'Частен' : 'Публичен' ?> клипборд
                                 </span>
                                 <h3><?= htmlspecialchars($c['name']) ?></h3>
                             </div>
@@ -34,7 +34,7 @@
                                 <span>Вид:</span>
                                 <span><?= $c['mode'] === 'multi' ? 'Множествен' : 'Единичен' ?></span>
                             </div>
-                            <a href="/clipboard/<?= htmlspecialchars($c['slug']) ?>" class="btn btn-outline card-action-btn">Отвори</a>
+                            <a href="/clipboard?id=<?= htmlspecialchars($c['id']) ?>" class="btn btn-outline card-action-btn">Отвори</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -64,6 +64,30 @@
                 <span class="empty-card-text">Нов клипборд</span>
             </a>
         </section>
+
+        <?php if (!empty($pagination) && $pagination['total'] > 1): ?>
+        <section class="pagination-row">
+            <?php
+                $prevPage = $pagination['current'] - 1;
+                $nextPage = $pagination['current'] + 1;
+                $prevDisabled = $pagination['current'] <= 1;
+                $nextDisabled = $pagination['current'] >= $pagination['total'];
+                $prevHref = $prevDisabled ? '#' : '/?page=' . $prevPage;
+                $nextHref = $nextDisabled ? '#' : '/?page=' . $nextPage;
+            ?>
+            <a class="pagination-button<?= $prevDisabled ? ' disabled' : '' ?>" href="<?= htmlspecialchars($prevHref) ?>" aria-disabled="<?= $prevDisabled ? 'true' : 'false' ?>">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </a>
+
+            <span class="pagination-page-indicator">
+                Страница <?= $pagination['current'] ?> от <?= $pagination['total'] ?>
+            </span>
+
+            <a class="pagination-button<?= $nextDisabled ? ' disabled' : '' ?>" href="<?= htmlspecialchars($nextHref) ?>" aria-disabled="<?= $nextDisabled ? 'true' : 'false' ?>">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </a>
+        </section>
+        <?php endif; ?>
 
         <section class="stats-section">
             <div class="stats-card">

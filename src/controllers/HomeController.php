@@ -22,10 +22,22 @@ class HomeController extends Controller
 
     public function index(): void 
     {
-        $clipboards = $this->service->getAllClipboards();
+        $pageNumber = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $pageNumber = max(1, $pageNumber);
+        $perPage = 5;
+
+        $totalClipboards = $this->service->countClipboards();
+        $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
+        $pageNumber = min($pageNumber, $totalPages);
+
+        $clipboards = $this->service->getClipboardsPage($pageNumber, $perPage);
 
         $this->render('home/index', [
             'clipboards'   => $clipboards,
+            'pagination'   => [
+                'current' => $pageNumber,
+                'total'   => $totalPages,
+            ],
             'extraCss'     => ['channels.css'],
             'showNav'      => true,
             'showActions'  => true,

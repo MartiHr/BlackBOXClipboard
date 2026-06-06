@@ -35,7 +35,7 @@ $router->get('logout', 'AuthController', 'logout');
 // 4. ОПРЕДЕЛЯМЕ ТЕКУЩАТА СТРАНИЦА от URL
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $uri = trim($uri, '/');
-$page = $uri ?: ($_GET['page'] ?? 'home');
+$page = $uri ?: 'home';
 
 // 5. ИЗПЪЛНЕНИЕ
 // Рутерът сам ще направи "new AuthController($pdo)" и ще извика правилния метод!

@@ -137,6 +137,49 @@
     gap: var(--spacing-lg);
 }
 
+.pagination-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.pagination-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--outline-variant);
+    background: var(--surface-container-lowest);
+    color: var(--on-surface);
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-button:hover {
+    border-color: var(--primary);
+    background-color: var(--surface-container);
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.pagination-button.disabled,
+.pagination-button[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.4;
+    border-color: var(--surface-variant);
+    color: var(--on-surface-variant);
+    background-color: var(--surface-container);
+}
+
+.pagination-page-indicator {
+    font-size: 14px;
+    color: var(--on-surface-variant);
+}
+
 @media (max-width: 768px) {
     .stats-section {
         grid-template-columns: 1fr;
