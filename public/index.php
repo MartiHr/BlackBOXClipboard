@@ -14,8 +14,8 @@ $router = new Router($pdo);
 // Начин на писане: add('име_в_URL', 'ИмеНаКонтролер', 'метод_в_контролера')
 
 $router->add('home', 'HomeController', 'index');
-// $router->add('login', 'AuthController', 'login');         // Показва формата за вход
-// $router->add('register', 'AuthController', 'register');   // Показва формата за регистрация
+$router->add('login', 'AuthController', 'login');         // Показва формата за вход
+$router->add('register', 'AuthController', 'register');   // Показва формата за регистрация
 // $router->add('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->add('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 
