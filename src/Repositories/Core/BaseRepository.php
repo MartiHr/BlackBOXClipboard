@@ -9,6 +9,11 @@ abstract class BaseRepository
         $this->db = $db;
     }
 
+    public function getDb(): PDO
+    {
+        return $this->db;
+    }
+
     protected function query(string $sql, array $params = []): PDOStatement
     {
         $stmt = $this->db->prepare($sql);
