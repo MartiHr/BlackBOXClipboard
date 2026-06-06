@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/Controller.php';
 require_once __DIR__ . '/../Auth/AuthService.php';
+require_once __DIR__ . '/../Repositories/Core/BaseRepository.php';
+require_once __DIR__ . '/../Repositories/UserRepository.php';
 
 class AuthController extends Controller 
 {
@@ -10,7 +12,7 @@ class AuthController extends Controller
     public function __construct(PDO $db) 
     {
         parent::__construct($db);
-        $this->authService = new AuthService($db);
+        $this->authService = new AuthService(new UserRepository($db));
     }
 
     public function login(): void 

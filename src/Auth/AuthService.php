@@ -1,70 +1,77 @@
 <?php
-// src/Auth/AuthService.php
 
-class AuthService 
+class AuthService
 {
-    private PDO $db;
+    private UserRepository $users;
 
-    public function __construct(PDO $db) 
+    public function __construct(UserRepository $users)
     {
-        $this->db = $db;
+        $this->users = $users;
     }
 
     /**
-     * Регистрация на нов потребител със защитена парола
+     * Register user
      */
-    public function register(string $username, string $email, string $password): bool 
+    public function register(string $username, string $email, string $password): bool
     {
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        
-        try {
-            $stmt = $this->db->prepare("INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
-            return $stmt->execute([
-                ':username' => trim($username),
-                ':email' => trim($email),
-                ':password_hash' => $hashedPassword
-            ]);
-        } catch (PDOException $e) {
+        $username = trim($username);
+        $email = trim($email);
+
+        if ($username === '' || $email === '' || $password === '') {
             return false;
         }
-    }
 
-    /**
-     * Проверка на парола и влизане в системата
-     */
-    public function login(string $username, string $password): bool 
-    {
-        $stmt = $this->db->prepare("SELECT * FROM users WHERE username = :username");
-        $stmt->execute([':username' => trim($username)]);
-        $user = $stmt->fetch();
-
-        if ($user && password_verify($password, $user['password_hash'])) {
-            // Записваме потребителя в сесията
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role']; // 'user' или 'admin'
-            return true;
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
         }
 
-        return false;
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+
+        return $this->users->create($username, $email, $hash);
     }
 
     /**
-     * Проверка дали текущият посетител е логнат
+     * Login
      */
-    public static function isLoggedIn(): bool 
+    public function login(string $username, string $password): bool
+    {
+        $username = trim($username);
+
+        $user = $this->users->findByUsername($username);
+
+        if (!$user) {
+            return false;
+        }
+
+        if (!password_verify($password, $user['password_hash'])) {
+            return false;
+        }
+
+        // session handling
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+
+        return true;
+    }
+
+    /**
+     * Check login state
+     */
+    public static function isLoggedIn(): bool
     {
         return isset($_SESSION['user_id']);
     }
 
     /**
-     * Изход от системата
+     * Logout
      */
-    public function logout(): void 
+    public function logout(): void
     {
-        unset($_SESSION['user_id']);
-        unset($_SESSION['username']);
-        unset($_SESSION['role']);
-        session_destroy();
+        $_SESSION = [];
+
+        if (session_id() !== '') {
+            session_destroy();
+        }
     }
 }
