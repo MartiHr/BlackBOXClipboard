@@ -142,6 +142,32 @@ class ClipboardService
         ]);
     }
 
+    public function getTodayTraffic(): array
+    {
+        $raw = $this->itemRepo->getTodayTraffic();
+        $bytes = (int) ($raw['total_bytes'] ?? 0);
+        $count = (int) ($raw['count'] ?? 0);
+
+        if ($bytes >= 1073741824) {
+            $display = round($bytes / 1073741824, 1) . ' GB';
+        } elseif ($bytes >= 1048576) {
+            $display = round($bytes / 1048576, 1) . ' MB';
+        } elseif ($bytes >= 1024) {
+            $display = round($bytes / 1024, 1) . ' KB';
+        } else {
+            $display = $bytes . ' B';
+        }
+
+        $dailyTarget = 10 * 1048576; // 10 MB daily target
+        $percent = min(100, round(($bytes / $dailyTarget) * 100));
+
+        return [
+            'display' => $display,
+            'percent' => $percent,
+            'count' => $count,
+        ];
+    }
+
     public function deleteItem(int $itemId, int $userId): void
     {
         $item = $this->itemRepo->getById($itemId);

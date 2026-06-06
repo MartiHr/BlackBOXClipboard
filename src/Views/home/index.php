@@ -94,12 +94,12 @@
                 <div class="progress-bar-container">
                     <span class="progress-bar-label">Глобален трафик</span>
                     <div class="progress-bar">
-                        <div class="progress-fill"></div>
+                        <div class="progress-fill" style="width: <?= htmlspecialchars($traffic['percent']) ?>%"></div>
                     </div>
                 </div>
                 <div class="stats-value-box">
-                    <span class="stats-large-num">8.4 GB</span>
-                    <span class="status-text">Прехвърлено днес</span>
+                    <span class="stats-large-num"><?= htmlspecialchars($traffic['display']) ?></span>
+                    <span class="status-text"><?= htmlspecialchars($traffic['count']) ?> елемента днес</span>
                 </div>
             </div>
 

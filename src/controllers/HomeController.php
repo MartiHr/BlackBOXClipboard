@@ -32,8 +32,11 @@ class HomeController extends Controller
 
         $clipboards = $this->service->getClipboardsPage($pageNumber, $perPage);
 
+        $traffic = $this->service->getTodayTraffic();
+
         $this->render('home/index', [
             'clipboards'   => $clipboards,
+            'traffic'      => $traffic,
             'pagination'   => [
                 'current' => $pageNumber,
                 'total'   => $totalPages,

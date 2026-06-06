@@ -6,11 +6,13 @@ class ItemRepository extends BaseRepository
 {
     public function create(array $data): int
     {
+        $data['content_size'] = strlen($data['content'] ?? '');
+
         $this->query(
             "INSERT INTO clipboard_share_items
-            (clipboard_id, user_id, resource_type_id, title, content)
+            (clipboard_id, user_id, resource_type_id, title, content, content_size)
             VALUES
-            (:clipboard_id, :user_id, :resource_type_id, :title, :content)",
+            (:clipboard_id, :user_id, :resource_type_id, :title, :content, :content_size)",
             $data
         );
 
@@ -65,6 +67,17 @@ class ItemRepository extends BaseRepository
             'DELETE FROM clipboard_share_items WHERE clipboard_id = :clipboard_id',
             [':clipboard_id' => $clipboardId]
         );
+    }
+
+    public function getTodayTraffic(): array
+    {
+        $stmt = $this->query(
+            "SELECT COUNT(*) as count, COALESCE(SUM(content_size), 0) as total_bytes
+            FROM clipboard_share_items
+            WHERE created_at >= CURDATE()"
+        );
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getResourceTypeByCategory(string $category): ?array
