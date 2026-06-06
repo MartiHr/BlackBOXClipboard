@@ -24,7 +24,7 @@ class Router
         }
 
         [$controller, $action] = $this->routes[$page];
-        $file = __DIR__ . "/Controllers/{$controller}.php";
+        $file = __DIR__ . "/../src/Controllers/{$controller}.php";
 
         if (!file_exists($file)) {
             http_response_code(500);
