@@ -22,7 +22,7 @@
     <header class="main-header">
         <div class="header-container">
             <div class="brand-logo">
-                <span>BlackBOX</span>
+                <a href="/" class="brand-link">BlackBOX</a>
                 <?php if (!empty($showStatus)): ?>
                 <div class="status-indicator">
                     <div class="pulse-dot"></div>

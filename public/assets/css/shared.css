@@ -81,10 +81,18 @@ a:hover {
 .brand-logo {
     font-size: 24px;
     font-weight: 700;
-    color: var(--primary);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+}
+
+.brand-link {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.brand-link:hover {
+    text-decoration: none;
 }
 
 .nav-links {
