@@ -1,62 +1,345 @@
-# BlackBOX Clipboard — Shared/Distributed Clipboard Specification
+# BlackBOX Clipboard — Distributed Clipboard & Real-Time Sharing System (v2)
+
+---
 
 ## 1. Project Overview
-A web-based **data transformation pipeline** called "Shared/Distributed Clipboard". Users input data (Copy/Upload) into predefined channels (Clipboards). The system validates, stores, and optionally transforms data before delivering it to other users in real time (Paste/Download/Execute) based on strict rules.
 
-## 2. Tech Stack & Restrictions
-- **Backend:** Pure PHP 8+ (OOP where sensible, NO frameworks like Laravel/Symfony).
-- **Frontend:** HTML5, CSS3, Vanilla JS (ES6+) — NO React, Vue, Angular, jQuery.
-- **Database:** MySQL via PDO (prepared statements only).
-- **Architecture:** Light MVC or component-based — `public/` as entry point, `includes/` or `src/` for config, classes, and routing.
-- **Dependencies:** NO external libraries. No Composer, no NPM, no Tailwind/Bootstrap (unless standard CSS resets).
+A web-based **distributed clipboard system** where users publish and consume structured resources (text, links, code, files) inside configurable containers called **Clipboards**.
 
-## 3. Domain Language
-- **Clipboard:** Container (channel/room) with access rules, input/output format rules, and capacity (single-item vs. history).
-- **Copy (Input):** Adding a resource to a Clipboard (paste text or upload file).
-- **Paste (Output):** Consuming a resource from a Clipboard.
-- **ExportAs:** The transformation rule applied to input data on Paste (e.g., raw text URL → clickable HTML `<a>` link).
+Each Clipboard behaves as:
 
-## 4. User Roles & UI Constraints
-1. **Admin:** Defines clipboards, sets MIME rules & `ExportAs` transforms. 
-   - *CRITICAL UI CONSTRAINT:* Do not build HTML forms for Admin clipboard CRUD operations. Instead, implement a global **Export JSON** button (downloads current DB clipboard configs) and an **Import JSON** button (uploads file, parses it, and overwrites the DB config).
-2. **Registered User:** Accesses authorized clipboards. Can Copy/Paste, subscribe, and view a History dashboard of their actions.
-3. **Guest:** Read-only (or Read/Write, depending on config) access to public clipboards only.
+* a data channel (publish/subscribe)
+* a storage container (single-state or history)
+* optionally a real-time feed (polling-based updates)
 
-## 5. Data Mapping (Copy → ExportAs → Paste)
-The core logic resides in how data changes between input and output.
+Users can:
 
-| Input (MIME / Type) | Storage Handling | `ExportAs` Options (Output) |
-|---|---|---|
-| `text/plain` (Link) | Stored as text | `Link` (generates HTML `<a href="...">`), `Text` |
-| `text/php` | Stored as text or `.php` file | `Code Preview` (syntax highlighted text), `Re-share` |
-| `text/js` | Stored as text | `Execute` (evaluates/runs in recipient's browser) |
-| `application/zip` (with PHP) | Unarchived / Stored as file | `Code preview`, `Download` |
-| `image/jpeg`, `image/gif` | Saved to server storage | `<img>` tag render, `Download link` |
+* Copy (publish) data into a Clipboard
+* Paste (consume/render) data from a Clipboard
+* Subscribe to Clipboards for notifications (email / UI / realtime)
 
-## 6. Expiration (Resource TTL) & Garbage Collection
-- **Time-to-Live (TTL):** Senders dictate expiration on upload: 30 mins / 60 mins / 8 hours / One-time view.
-- **One-time view:** Record and file are permanently deleted immediately after the first "Paste" (consumption).
-- **Garbage Collection (GC):** No cron jobs available. Implement a pseudo-cron GC mechanism that triggers on `index.php` load or via a lightweight background async call to purge expired DB rows and unlink files.
+---
 
-## 7. Notifications & Live Updates
-- **Live Updates:** Use Vanilla JS `setInterval` (short polling) querying a PHP JSON endpoint containing `last_timestamp` to fetch and render new clipboard items without page reload.
-- **System/Email Notifications:** When a user subscribes to a clipboard, notify them of new copies via a UI Dashboard marker (e.g., "3 new items") OR via PHP's native `mail()` function.
+## 2. Core Architecture Model
 
-## 8. External API Scripts (CLI/Browser Simulation)
-Build 3 standalone, isolated PHP scripts to prove the pipeline works without the main web UI. Use `cURL` or `file_get_contents` with stream context.
-1. `api_create_clipboard.php` — POSTs a JSON payload to the system to generate a new clipboard.
-2. `api_external_copy.php` — POSTs text/file data to a specific `clipboard_id`.
-3. `api_external_paste.php` — GETs/polls the latest content from a `clipboard_id` and prints the formatted `ExportAs` result to the console/screen.
+```text
+User Action → Clipboard Item → Event → Notification → ExportAs Rendering
+```
 
-## 9. Database Schema (Suggested)
-- `users` — id, username, email, password_hash, role
-- `clipboards` — id, name, is_public, capacity_type, input_types (JSON), export_types (JSON)
-- `clipboard_access` — user_id, clipboard_id
-- `shares` — id, clipboard_id, user_id, content_type, content_path, created_at, expires_at, is_consumed, view_count
-- `subscriptions` — user_id, clipboard_id
-- `history` — user_id, action_type (enum: copy, paste), share_id, timestamp
+---
 
-## 10. Critical Agent Instructions
-- **Security First:** Uploaded files (`.php`, `.zip`, images) MUST be stored outside the public web root or protected via `.htaccess` (`Deny from all`). Never execute user-uploaded PHP files directly on the server. Always use `htmlspecialchars()` on text output to prevent XSS.
-- **ExportAs Architecture:** The logic formatting the output (e.g., a `ClipboardFormatter` class) is the core of this project. Keep it modular (Strategy pattern or similar) so new MIME types and transformation rules can be added easily.
-- **Code Quality:** Keep comments minimal but explain complex backend logic. Output semantic, accessible HTML5.
+## 3. Tech Stack & Restrictions
+
+* Backend: Pure PHP 8+ (NO frameworks)
+* Frontend: Vanilla JS (ES6+), HTML5, CSS3
+* Database: MySQL via PDO (prepared statements only)
+* Architecture: Lightweight MVC or modular structure
+* No external dependencies (no Composer, no npm)
+
+---
+
+## 4. Domain Language
+
+* Clipboard: Logical container (channel)
+* Item: Single unit of published data
+* Copy: Create item (publish)
+* Paste: Read/render item (consume)
+* ExportAs: Output transformation layer
+* Subscription: User follows clipboard updates
+* Event: System state change (item_created, item_consumed)
+
+---
+
+## 5. User Roles
+
+### Admin
+
+* Creates clipboards
+* Defines allowed types & formats
+* Defines ExportAs rules
+* Imports/exports configuration via JSON only
+
+### Registered User
+
+* Publish items (Copy)
+* Consume items (Paste)
+* Subscribe to clipboards
+* View history
+
+### Guest
+
+* Read-only access depending on clipboard rules
+
+---
+
+## 6. Database Schema
+
+---
+
+### users
+
+```sql
+users (
+  id BIGINT PRIMARY KEY,
+  username VARCHAR,
+  email VARCHAR UNIQUE,
+  password_hash VARCHAR,
+  role ENUM('admin','user'),
+  created_at TIMESTAMP
+)
+```
+
+---
+
+### clipboards
+
+```sql
+clipboards (
+  id BIGINT PRIMARY KEY,
+  name VARCHAR,
+  slug VARCHAR UNIQUE,
+  description TEXT,
+  owner_id BIGINT,
+  visibility ENUM('public','private'),
+  mode ENUM('single','multi'),
+  allow_guest BOOLEAN DEFAULT false,
+  created_at TIMESTAMP
+)
+```
+
+---
+
+### clipboard_rules
+
+```sql
+clipboard_rules (
+  id BIGINT PRIMARY KEY,
+  clipboard_id BIGINT,
+  capacity_type ENUM('single','multi'),
+  allowed_mime JSON,
+  allowed_formats JSON,
+  export_rules JSON,
+  ttl_default INT NULL
+)
+```
+
+---
+
+### clipboard_items
+
+```sql
+clipboard_items (
+  id BIGINT PRIMARY KEY,
+  clipboard_id BIGINT,
+  user_id BIGINT,
+  type ENUM('text','link','code','file','image'),
+  mime_type VARCHAR,
+  format VARCHAR,
+  content LONGTEXT NULL,
+  file_path TEXT NULL,
+  view_count INT DEFAULT 0,
+  is_consumed BOOLEAN DEFAULT false,
+  created_at TIMESTAMP
+)
+```
+
+---
+
+### item_expiration
+
+```sql
+item_expiration (
+  id BIGINT PRIMARY KEY,
+  item_id BIGINT,
+  expires_at DATETIME NULL,
+  max_views INT NULL,
+  one_time BOOLEAN DEFAULT false
+)
+```
+
+---
+
+### subscriptions
+
+```sql
+subscriptions (
+  id BIGINT PRIMARY KEY,
+  user_id BIGINT,
+  clipboard_id BIGINT,
+  notify_email BOOLEAN DEFAULT true,
+  notify_inapp BOOLEAN DEFAULT true,
+  notify_realtime BOOLEAN DEFAULT false,
+  last_seen_item_id BIGINT NULL,
+  created_at TIMESTAMP
+)
+```
+
+---
+
+### clipboard_events
+
+```sql
+clipboard_events (
+  id BIGINT PRIMARY KEY,
+  clipboard_id BIGINT,
+  item_id BIGINT NULL,
+  event_type ENUM('item_created','item_viewed','item_consumed','clipboard_updated'),
+  payload JSON,
+  created_at TIMESTAMP
+)
+```
+
+---
+
+### history
+
+```sql
+history (
+  id BIGINT PRIMARY KEY,
+  user_id BIGINT,
+  item_id BIGINT,
+  action ENUM('copy','paste'),
+  created_at TIMESTAMP
+)
+```
+
+---
+
+## 7. ExportAs System (Core Engine)
+
+### Concept
+
+```text
+Stored Item → ExportAs Strategy → Rendered Output
+```
+
+---
+
+### Supported transformations
+
+| Type  | Output                        |
+| ----- | ----------------------------- |
+| text  | raw / escaped                 |
+| link  | HTML anchor                   |
+| code  | formatted preview             |
+| js    | browser execution (sandboxed) |
+| image | `<img>`                       |
+| file  | download link                 |
+
+---
+
+### PHP Interface
+
+```php
+interface ExportStrategy {
+    public function render($item);
+}
+```
+
+---
+
+### Example
+
+```php
+class LinkExport implements ExportStrategy {
+    public function render($item) {
+        return '<a href="'.$item->content.'">'.$item->content.'</a>';
+    }
+}
+```
+
+---
+
+## 8. TTL & Garbage Collection
+
+No cron jobs allowed.
+
+Cleanup triggers:
+
+* index.php load
+* API request
+* clipboard access
+
+Logic:
+
+* remove expired items
+* remove one-time consumed items
+* delete orphaned files
+
+---
+
+## 9. Live Updates System
+
+No WebSockets.
+
+Polling approach:
+
+```text
+GET /api/clipboard/updates?last_id=123
+```
+
+JS:
+
+```javascript
+setInterval(() => {
+  fetch('/updates');
+}, 3000);
+```
+
+---
+
+## 10. External API Simulation Scripts
+
+### 1. create clipboard
+
+`api_create_clipboard.php`
+
+* POST JSON
+* returns clipboard_id
+
+---
+
+### 2. external copy
+
+`api_external_copy.php`
+
+* POST:
+
+  * clipboard_id
+  * content
+  * type/mime
+
+---
+
+### 3. external paste
+
+`api_external_paste.php`
+
+* GET clipboard_id
+* returns latest item + ExportAs output
+
+---
+
+## 11. Security Rules
+
+* No execution of uploaded PHP files
+* Escape all output with `htmlspecialchars()`
+* Store uploads outside public directory
+* Protect uploads via `.htaccess`
+* Validate MIME types before saving
+
+---
+
+## 12. Key Design Principles
+
+* Clipboards are immutable containers
+* Items are append-only records
+* ExportAs is pluggable strategy system
+* System is event-driven, not request-driven
+* Polling replaces real-time sockets
+
+---
+
+## 13. Final Definition
+
+A PHP-based distributed clipboard system where users publish items into configurable clipboards, and those items are transformed and delivered via ExportAs rules through polling-based real-time updates and event-driven notifications.
