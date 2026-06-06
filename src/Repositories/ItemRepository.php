@@ -51,6 +51,22 @@ class ItemRepository extends BaseRepository
         return $result ?: null;
     }
 
+    public function deleteById(int $id): void
+    {
+        $this->query(
+            'DELETE FROM clipboard_share_items WHERE id = :id',
+            [':id' => $id]
+        );
+    }
+
+    public function deleteByClipboardId(int $clipboardId): void
+    {
+        $this->query(
+            'DELETE FROM clipboard_share_items WHERE clipboard_id = :clipboard_id',
+            [':clipboard_id' => $clipboardId]
+        );
+    }
+
     public function getResourceTypeByCategory(string $category): ?array
     {
         $stmt = $this->query(

@@ -112,6 +112,16 @@ class ClipboardService
             throw new Exception('Content is required');
         }
 
+        $clipboardId = (int) $data['clipboard_id'];
+        $clipboard = $this->clipRepo->getById($clipboardId);
+        if (!$clipboard) {
+            throw new Exception('Clipboard not found');
+        }
+
+        if (($clipboard['mode'] ?? 'multi') === 'single') {
+            $this->itemRepo->deleteByClipboardId($clipboardId);
+        }
+
         $type = $this->detectType($content);
         $resourceType = $this->itemRepo->getResourceTypeByCategory($type);
         if (!$resourceType) {
@@ -124,12 +134,31 @@ class ClipboardService
         $title = substr($content, 0, 80);
 
         return $this->itemRepo->create([
-            'clipboard_id' => (int) $data['clipboard_id'],
+            'clipboard_id' => $clipboardId,
             'user_id' => $userId,
             'resource_type_id' => (int) $resourceType['id'],
             'title' => $title,
             'content' => $content,
         ]);
+    }
+
+    public function deleteItem(int $itemId, int $userId): void
+    {
+        $item = $this->itemRepo->getById($itemId);
+        if (!$item) {
+            throw new Exception('Item not found');
+        }
+
+        $clipboard = $this->clipRepo->getById((int) $item['clipboard_id']);
+        if (!$clipboard) {
+            throw new Exception('Clipboard not found');
+        }
+
+        if ((int) $clipboard['owner_id'] !== $userId) {
+            throw new Exception('Not authorized to delete items in this clipboard');
+        }
+
+        $this->itemRepo->deleteById($itemId);
     }
 
     private function detectType(string $content): string

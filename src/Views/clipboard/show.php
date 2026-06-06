@@ -80,6 +80,11 @@
                                 </button>
                                 <?php endif; ?>
                                 <?php endif; ?>
+                                <?php if ($isOwner): ?>
+                                <button class="btn btn-icon-only btn-outline delete-item-btn" data-id="<?= (int) $item['id'] ?>" title="Изтрий">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                                <?php endif; ?>
                                 <button class="copy-btn" data-type="<?= htmlspecialchars($item['display_type']) ?>" data-content="<?= htmlspecialchars($item['content'], ENT_QUOTES) ?>">Копирай</button>
                             </div>
                         </div>
@@ -132,10 +137,7 @@
                 fileInput.click();
             });
 
-            fileInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (!file) return;
-
+            function readFile(file) {
                 if (file.type.startsWith('text/') || file.type === 'application/json' || file.type === 'application/xml') {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -143,13 +145,6 @@
                         pasteInput.dispatchEvent(new Event('input'));
                     };
                     reader.readAsText(file);
-                } else if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        pasteInput.value = e.target.result;
-                        pasteInput.dispatchEvent(new Event('input'));
-                    };
-                    reader.readAsDataURL(file);
                 } else {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -158,8 +153,31 @@
                     };
                     reader.readAsDataURL(file);
                 }
+            }
 
+            fileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                readFile(file);
                 this.value = '';
+            });
+
+            var dropZone = document.querySelector('.input-section');
+
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', function(e) {
+                this.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file) readFile(file);
             });
 
             shareBtn.addEventListener('click', function() {
@@ -292,5 +310,66 @@
                             });
                     }
                 });
+            });
+
+            var pendingDeleteId = null;
+
+            function showDeleteModal(itemId) {
+                pendingDeleteId = itemId;
+                document.getElementById('delete-modal').classList.add('open');
+            }
+
+            function hideDeleteModal() {
+                document.getElementById('delete-modal').classList.remove('open');
+                pendingDeleteId = null;
+            }
+
+            document.querySelectorAll('.delete-item-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    showDeleteModal(this.dataset.id);
+                });
+            });
+        </script>
+
+        <div id="delete-modal" class="modal-overlay">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <span class="material-symbols-outlined modal-icon">delete</span>
+                    <h3>Изтриване на запис</h3>
+                </div>
+                <p class="modal-body">Сигурни ли сте, че искате да изтриете този запис? Това действие не може да бъде отменено.</p>
+                <div class="modal-actions">
+                    <button id="delete-cancel-btn" class="btn btn-outline">Отказ</button>
+                    <button id="delete-confirm-btn" class="btn btn-danger">Изтрий</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('delete-confirm-btn').addEventListener('click', function() {
+                if (!pendingDeleteId) return;
+
+                fetch('/clipboard/item/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: pendingDeleteId })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        var card = document.querySelector('.delete-item-btn[data-id="' + pendingDeleteId + '"]');
+                        if (card) card.closest('.item-card').remove();
+                        hideDeleteModal();
+                    } else {
+                        alert(d.error || 'Грешка при изтриване');
+                        hideDeleteModal();
+                    }
+                });
+            });
+
+            document.getElementById('delete-cancel-btn').addEventListener('click', hideDeleteModal);
+
+            document.getElementById('delete-modal').addEventListener('click', function(e) {
+                if (e.target === this) hideDeleteModal();
             });
         </script>

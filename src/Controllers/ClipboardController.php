@@ -51,11 +51,15 @@ class ClipboardController extends Controller
             return;
         }
 
-        $items = $this->service->getClipboardItems($id);
+        $itemLimit = ($clipboard['mode'] ?? 'multi') === 'single' ? 1 : 50;
+        $items = $this->service->getClipboardItems($id, $itemLimit);
+
+        $isOwner = AuthService::isLoggedIn() && (int) $clipboard['owner_id'] === $_SESSION['user_id'];
 
         $this->render('clipboard/show', [
             'clipboard'  => $clipboard,
             'items'      => $items,
+            'isOwner'    => $isOwner,
             'extraCss'   => ['auth.css', 'show.css'],
             'showNav'    => true,
             'showActions' => true,
@@ -121,6 +125,39 @@ class ClipboardController extends Controller
 
         } catch (Exception $e) {
             http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function deleteItem(): void
+    {
+        header('Content-Type: application/json');
+
+        if (!AuthService::isLoggedIn()) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $itemId = (int) ($input['item_id'] ?? 0);
+
+        if (!$itemId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Item ID is required']);
+            return;
+        }
+
+        try {
+            $this->service->deleteItem($itemId, $_SESSION['user_id']);
+
+            echo json_encode(['success' => true]);
+
+        } catch (Exception $e) {
+            http_response_code(403);
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
