@@ -14,6 +14,8 @@ session_start();
 // 1. Вземаме базата данни от Docker
 $pdo = require __DIR__ . '/../config/db.php';
 
+require_once __DIR__ . '/../config/storage.php';
+
 // 2. Включваме рутера
 require_once __DIR__ . '/Router.php';
 $router = new Router($pdo);
@@ -27,6 +29,7 @@ $router->get('clipboard/create', 'ClipboardController', 'createGet');
 $router->post('clipboard/create', 'ClipboardController', 'create');
 $router->post('clipboard/item/create', 'ClipboardController', 'createItem');
 $router->post('clipboard/item/delete', 'ClipboardController', 'deleteItem');
+$router->get('file', 'ClipboardController', 'serveFile');
 $router->get('login', 'AuthController', 'loginGet');
 $router->post('login', 'AuthController', 'loginPost');
 $router->get('register', 'AuthController', 'registerGet');

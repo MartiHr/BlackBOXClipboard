@@ -96,6 +96,11 @@ class ClipboardService
         return $this->clipRepo->getById($id);
     }
 
+    public function getItemById(int $id): ?array
+    {
+        return $this->itemRepo->getById($id);
+    }
+
     public function getClipboardItems(int $clipboardId, int $limit = 50): array
     {
         $items = $this->itemRepo->getByClipboardId($clipboardId, $limit);
@@ -103,6 +108,11 @@ class ClipboardService
         return array_map(function ($item) {
             $content = $item['content'] ?? '';
             $displayType = $this->detectType($content);
+
+            if (!empty($item['file_path'])) {
+                $content = '/file?id=' . $item['id'];
+                $displayType = 'image';
+            }
 
             return [
                 'id' => (int) $item['id'],
@@ -130,6 +140,13 @@ class ClipboardService
         }
 
         if (($clipboard['mode'] ?? 'multi') === 'single') {
+            $oldFiles = $this->itemRepo->getFilePathsByClipboardId($clipboardId);
+            foreach ($oldFiles as $old) {
+                $oldPath = UPLOADS_DIR . '/' . basename($old['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
             $this->itemRepo->deleteByClipboardId($clipboardId);
         }
 
@@ -143,14 +160,67 @@ class ClipboardService
         }
 
         $title = substr($content, 0, 80);
+        $storedContent = $content;
 
-        return $this->itemRepo->create([
+        $itemId = $this->itemRepo->create([
             'clipboard_id' => $clipboardId,
             'user_id' => $userId,
             'resource_type_id' => (int) $resourceType['id'],
             'title' => $title,
-            'content' => $content,
+            'content' => $storedContent,
         ]);
+
+        if (str_starts_with($content, 'data:')) {
+            $savedPath = $this->saveDataUriToDisk($content, $itemId);
+            if ($savedPath) {
+                $this->itemRepo->updateFilePath($itemId, $savedPath);
+                $this->itemRepo->updateContent($itemId, 'Качено изображение');
+            }
+        }
+
+        return $itemId;
+    }
+
+    private function saveDataUriToDisk(string $dataUri, int $itemId): ?string
+    {
+        if (!preg_match('/^data:([^;]+);base64,(.+)$/', $dataUri, $m)) {
+            return null;
+        }
+
+        $mime = $m[1];
+        $data = base64_decode($m[2], true);
+        if ($data === false) {
+            return null;
+        }
+
+        $ext = match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg',
+            'image/bmp' => 'bmp',
+            'text/plain' => 'txt',
+            'text/html' => 'html',
+            'application/json' => 'json',
+            'application/xml' => 'xml',
+            'application/pdf' => 'pdf',
+            'application/zip' => 'zip',
+            default => 'bin',
+        };
+
+        $filename = $itemId . '.' . $ext;
+        $path = UPLOADS_DIR . '/' . $filename;
+
+        if (!is_dir(UPLOADS_DIR)) {
+            mkdir(UPLOADS_DIR, 0755, true);
+        }
+
+        if (file_put_contents($path, $data) === false) {
+            return null;
+        }
+
+        return 'uploads/' . $filename;
     }
 
     public function getTodayTraffic(): array
@@ -193,6 +263,13 @@ class ClipboardService
 
         if ((int) $clipboard['owner_id'] !== $userId) {
             throw new Exception('Not authorized to delete items in this clipboard');
+        }
+
+        if (!empty($item['file_path'])) {
+            $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+            if (is_file($oldPath)) {
+                unlink($oldPath);
+            }
         }
 
         $this->itemRepo->deleteById($itemId);

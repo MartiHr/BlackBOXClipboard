@@ -22,7 +22,7 @@ class ItemRepository extends BaseRepository
     public function getByClipboardId(int $clipboardId, int $limit = 50): array
     {
         $stmt = $this->query(
-            'SELECT csi.id, csi.title, csi.content, rt.name as type,
+            'SELECT csi.id, csi.title, csi.content, csi.file_path, rt.name as type,
                     u.username as user_name, csi.created_at
             FROM clipboard_share_items csi
             LEFT JOIN resource_types rt ON csi.resource_type_id = rt.id
@@ -42,7 +42,7 @@ class ItemRepository extends BaseRepository
     public function getById(int $id): ?array
     {
         $stmt = $this->query(
-            'SELECT csi.id, csi.clipboard_id, csi.content, rt.name as type
+            'SELECT csi.id, csi.clipboard_id, csi.content, csi.file_path, rt.name as type
             FROM clipboard_share_items csi
             LEFT JOIN resource_types rt ON csi.resource_type_id = rt.id
             WHERE csi.id = :id',
@@ -69,6 +69,17 @@ class ItemRepository extends BaseRepository
         );
     }
 
+    public function getFilePathsByClipboardId(int $clipboardId): array
+    {
+        $stmt = $this->query(
+            'SELECT id, file_path FROM clipboard_share_items
+             WHERE clipboard_id = :clipboard_id AND file_path IS NOT NULL AND file_path != \'\'',
+            [':clipboard_id' => $clipboardId]
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getTodayTraffic(): array
     {
         $stmt = $this->query(
@@ -78,6 +89,22 @@ class ItemRepository extends BaseRepository
         );
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function updateFilePath(int $id, string $filePath): void
+    {
+        $this->query(
+            'UPDATE clipboard_share_items SET file_path = :file_path WHERE id = :id',
+            [':file_path' => $filePath, ':id' => $id]
+        );
+    }
+
+    public function updateContent(int $id, string $content): void
+    {
+        $this->query(
+            'UPDATE clipboard_share_items SET content = :content WHERE id = :id',
+            [':content' => $content, ':id' => $id]
+        );
     }
 
     public function getResourceTypeByCategory(string $category): ?array

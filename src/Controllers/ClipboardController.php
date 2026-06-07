@@ -144,6 +144,51 @@ class ClipboardController extends Controller
         }
     }
 
+    public function serveFile(): void
+    {
+        $id = (int) ($_GET['id'] ?? 0);
+
+        $item = $this->service->getItemById($id);
+
+        if (!$item || empty($item['file_path'])) {
+            http_response_code(404);
+            echo 'File not found';
+            return;
+        }
+
+        $fullPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+
+        if (!is_file($fullPath)) {
+            http_response_code(404);
+            echo 'File not found';
+            return;
+        }
+
+        $ext = pathinfo($fullPath, PATHINFO_EXTENSION);
+        $mime = match (strtolower($ext)) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            'bmp' => 'image/bmp',
+            'txt' => 'text/plain',
+            'html' => 'text/html',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'pdf' => 'application/pdf',
+            'zip' => 'application/zip',
+            default => 'application/octet-stream',
+        };
+
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($fullPath));
+        header('Cache-Control: public, max-age=31536000');
+        header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT');
+
+        readfile($fullPath);
+    }
+
     public function deleteItem(): void
     {
         header('Content-Type: application/json');
