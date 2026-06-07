@@ -331,9 +331,9 @@
                 pendingDeleteId = null;
             }
 
-            var shareBtn = document.querySelector('.share-url-btn');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function() {
+            var urlShareBtn = document.querySelector('.share-url-btn');
+            if (urlShareBtn) {
+                urlShareBtn.addEventListener('click', function() {
                     var url = window.location.href;
                     navigator.clipboard.writeText(url).then(function() {
                         var orig = this.innerHTML;
