@@ -9,8 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.getElementById('createForm').addEventListener('submit', function(e) {
+    var form = document.getElementById('createForm');
+    var submitBtn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Създаване...';
+
         var checked = Array.from(this.querySelectorAll('input[name="types[]"]:checked')).map(function(c) { return parseInt(c.value); });
         fetch('/clipboard/create', {
             method: 'POST',
@@ -23,8 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 allowed_resource_types: checked
             })
         }).then(function(r) { return r.json(); }).then(function(d) {
-            if (d.success) window.location.href = '/';
-            else alert(d.error || 'Грешка при създаване');
+            if (d.success) {
+                window.location.href = '/';
+            } else {
+                alert(d.error || 'Грешка при създаване');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Създай клипборд';
+            }
+        }).catch(function() {
+            alert('Грешка при свързване със сървъра');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Създай клипборд';
         });
     });
 });
