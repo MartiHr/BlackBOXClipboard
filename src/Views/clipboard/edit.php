@@ -81,40 +81,70 @@
         </div>
 
         <script>
-        document.getElementById('editForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var btn = this.querySelector('button[type="submit"]');
-            if (btn.disabled) return;
-            btn.disabled = true;
-            btn.textContent = 'Запазване...';
+        (function() {
+            var toggleTypesCheckbox = document.getElementById('toggleResourceTypes');
+            var toggleTypesLabel = document.getElementById('toggleResourceTypesLabel');
 
-            var checked = Array.from(this.querySelectorAll('input[name="types[]"]:checked')).map(function(c) { return parseInt(c.value); });
-            fetch('/clipboard/edit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: parseInt(this.querySelector('input[name="id"]').value),
-                    name: this.name.value,
-                    description: this.description.value,
-                    visibility: this.visibility.value,
-                    mode: this.modeInput.value,
-                    allowed_resource_types: checked
+            function updateToggleLabel(allChecked) {
+                toggleTypesLabel.textContent = allChecked ? 'Премахни всички' : 'Избери всички';
+            }
+
+            function syncToggleLabel() {
+                var checkboxes = Array.from(document.querySelectorAll('input[name="types[]"]'));
+                var allChecked = checkboxes.length > 0 && checkboxes.every(function(checkbox) { return checkbox.checked; });
+                toggleTypesCheckbox.checked = allChecked;
+                updateToggleLabel(allChecked);
+            }
+
+            if (toggleTypesCheckbox) {
+                toggleTypesCheckbox.addEventListener('change', function() {
+                    var checkboxes = Array.from(document.querySelectorAll('input[name="types[]"]'));
+                    checkboxes.forEach(function(checkbox) { checkbox.checked = toggleTypesCheckbox.checked; });
+                    updateToggleLabel(toggleTypesCheckbox.checked);
+                });
+
+                document.querySelectorAll('input[name="types[]"]').forEach(function(checkbox) {
+                    checkbox.addEventListener('change', syncToggleLabel);
+                });
+
+                syncToggleLabel();
+            }
+
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var btn = this.querySelector('button[type="submit"]');
+                if (btn.disabled) return;
+                btn.disabled = true;
+                btn.textContent = 'Запазване...';
+
+                var checked = Array.from(this.querySelectorAll('input[name="types[]"]:checked')).map(function(c) { return parseInt(c.value); });
+                fetch('/clipboard/edit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: parseInt(this.querySelector('input[name="id"]').value),
+                        name: this.name.value,
+                        description: this.description.value,
+                        visibility: this.visibility.value,
+                        mode: this.modeInput.value,
+                        allowed_resource_types: checked
+                    })
                 })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                if (d.success) {
-                    window.location.href = '/clipboard?id=' + document.querySelector('input[name="id"]').value;
-                } else {
-                    alert(d.error || 'Грешка при запазване');
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        window.location.href = '/clipboard?id=' + document.querySelector('input[name="id"]').value;
+                    } else {
+                        alert(d.error || 'Грешка при запазване');
+                        btn.disabled = false;
+                        btn.textContent = 'Запази';
+                    }
+                })
+                .catch(function() {
+                    alert('Грешка при свързване');
                     btn.disabled = false;
                     btn.textContent = 'Запази';
-                }
-            })
-            .catch(function() {
-                alert('Грешка при свързване');
-                btn.disabled = false;
-                btn.textContent = 'Запази';
+                });
             });
-        });
+        })();
         </script>
