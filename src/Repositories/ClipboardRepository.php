@@ -4,17 +4,40 @@ require_once __DIR__ . '/Core/BaseRepository.php';
 
 class ClipboardRepository extends BaseRepository
 {
+    private array $columnCache = [];
+
     public function create(array $data): int
     {
+        $columns = ['name', 'description', 'owner_id', 'visibility', 'mode'];
+        $placeholders = [':name', ':description', ':owner_id', ':visibility', ':mode'];
+
+        if (isset($data['share_code']) && $this->hasColumn('share_code')) {
+            $columns[] = 'share_code';
+            $placeholders[] = ':share_code';
+        } else {
+            unset($data['share_code']);
+        }
+
         $this->query(
-            "INSERT INTO clipboards
-            (name, description, owner_id, visibility, mode)
-            VALUES
-            (:name, :description, :owner_id, :visibility, :mode)",
+            'INSERT INTO clipboards (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $placeholders) . ')',
             $data
         );
 
         return (int)$this->db->lastInsertId();
+    }
+
+    private function hasColumn(string $column): bool
+    {
+        if (array_key_exists($column, $this->columnCache)) {
+            return $this->columnCache[$column];
+        }
+
+        $quotedColumn = $this->db->quote($column);
+        $stmt = $this->db->query("SHOW COLUMNS FROM clipboards LIKE $quotedColumn");
+        $hasColumn = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        $this->columnCache[$column] = $hasColumn;
+
+        return $hasColumn;
     }
 
     public function attachResourceTypes(int $clipboardId, array $typeIds): void
@@ -113,8 +136,13 @@ class ClipboardRepository extends BaseRepository
 
     public function getById(int $id): ?array
     {
+        $columns = ['id', 'name', 'description', 'owner_id', 'visibility', 'mode', 'created_at'];
+        if ($this->hasColumn('share_code')) {
+            $columns[] = 'share_code';
+        }
+
         $stmt = $this->query(
-            'SELECT id, name, description, owner_id, visibility, mode, created_at
+            'SELECT ' . implode(', ', $columns) . '
             FROM clipboards
             WHERE id = :id',
             [':id' => $id]
@@ -154,5 +182,17 @@ class ClipboardRepository extends BaseRepository
         );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateShareCode(int $clipboardId, string $shareCode): void
+    {
+        if (!$this->hasColumn('share_code')) {
+            return;
+        }
+
+        $this->query(
+            'UPDATE clipboards SET share_code = :share_code WHERE id = :id',
+            [':share_code' => $shareCode, ':id' => $clipboardId]
+        );
     }
 }

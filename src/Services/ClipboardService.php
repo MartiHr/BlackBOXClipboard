@@ -42,7 +42,8 @@ class ClipboardService
                 'description' => trim($data['description'] ?? ''),
                 'owner_id' => $userId,
                 'visibility' => $data['visibility'] ?? 'private',
-                'mode' => $data['mode'] ?? 'multi'
+                'mode' => $data['mode'] ?? 'multi',
+                'share_code' => $this->buildShareCode()
             ]);
 
             if (!empty($allowedTypes)) {
@@ -93,7 +94,11 @@ class ClipboardService
 
     public function getClipboardById(int $id): ?array
     {
-        return $this->clipRepo->getById($id);
+        $clipboard = $this->clipRepo->getById($id);
+        if ($clipboard && !isset($clipboard['share_code'])) {
+            $clipboard['share_code'] = $this->buildShareCode();
+        }
+        return $clipboard;
     }
 
     public function getItemById(int $id): ?array
@@ -280,6 +285,16 @@ class ClipboardService
     public function getAllowedResourceTypesForClipboard(int $clipboardId): array
     {
         return $this->clipRepo->getAllowedResourceTypes($clipboardId);
+    }
+
+    private function buildShareCode(): string
+    {
+        $characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $code = '';
+        for ($i = 0; $i < 5; $i++) {
+            $code .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        return $code;
     }
 
     private function detectType(string $content): string

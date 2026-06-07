@@ -29,10 +29,17 @@
                 <div class="meta-card">
                     <span class="meta-label">Обекти</span>
                     <strong><?= count($items) ?></strong>
-                </div>                <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
+                </div>
+                <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
                 <button class="btn btn-outline btn-fit share-url-btn" title="Копирай връзката">
                     <span class="material-symbols-outlined">share</span> Сподели
                 </button>
+                <?php if (!empty($clipboard['share_code'])): ?>
+                <button class="btn btn-outline btn-fit share-code-btn" title="Копирай кода" data-share-code="<?= htmlspecialchars($clipboard['share_code'], ENT_QUOTES) ?>">
+                    <span class="material-symbols-outlined">key</span> Код
+                    <span class="share-code-badge"><?= htmlspecialchars($clipboard['share_code']) ?></span>
+                </button>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="allowed-types-section">
@@ -497,11 +504,31 @@
                 urlShareBtn.addEventListener('click', function() {
                     var url = window.location.href;
                     navigator.clipboard.writeText(url).then(function() {
-                        var orig = this.innerHTML;
-                        this.innerHTML = '<span class="material-symbols-outlined">check</span> Копиран!';
-                        var self = this;
-                        setTimeout(function() { self.innerHTML = orig; }, 2000);
-                    }.bind(this));
+                        var orig = urlShareBtn.innerHTML;
+                        urlShareBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Копирано!';
+                        urlShareBtn.classList.add('copied');
+                        setTimeout(function() {
+                            urlShareBtn.innerHTML = orig;
+                            urlShareBtn.classList.remove('copied');
+                        }, 1600);
+                    });
+                });
+            }
+
+            var shareCodeButton = document.querySelector('.share-code-btn');
+            if (shareCodeButton) {
+                shareCodeButton.addEventListener('click', function() {
+                    var code = this.dataset.shareCode || '';
+                    if (!code) return;
+                    navigator.clipboard.writeText(code).then(function() {
+                        var orig = shareCodeButton.innerHTML;
+                        shareCodeButton.innerHTML = '<span class="material-symbols-outlined">check</span> Копирано!';
+                        shareCodeButton.classList.add('copied');
+                        setTimeout(function() {
+                            shareCodeButton.innerHTML = orig;
+                            shareCodeButton.classList.remove('copied');
+                        }, 1600);
+                    });
                 });
             }
 
