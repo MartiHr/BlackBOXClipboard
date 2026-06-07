@@ -92,9 +92,22 @@ class AuthController extends Controller
         $result = $this->authService->register($username, $email, $password);
         $message = '';
 
+        if ($result === 'success') {
+            $userRepo = new UserRepository($this->db);
+            $user = $userRepo->findByUsername($username);
+            if ($user) {
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = (int) $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role'];
+                header('Location: /');
+                exit;
+            }
+        }
+
         switch ($result) {
             case 'success':
-                $message = "<p style='color:green;'>Регистрацията е успешна! <a href='/'>Влезте отново</a></p>";
+                $message = "<p style='color:green;'>Регистрацията е успешна!</p>";
                 break;
             case 'short_username':
                 $message = "<p style='color:red;'>Потребителското име трябва да е поне 3 символа.</p>";

@@ -36,11 +36,6 @@
             <div class="form-footer-redirect">
                 <p>Вече имате акаунт? <a href="/login">Влезте</a></p>
             </div>
-
-            <div class="encryption-badge">
-                <span class="material-symbols-outlined">lock</span>
-                <span>Криптиране тип край-до-край</span>
-            </div>
         </div>
 
 

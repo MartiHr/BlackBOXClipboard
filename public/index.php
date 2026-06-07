@@ -16,6 +16,22 @@ $pdo = require __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/storage.php';
 require_once __DIR__ . '/../config/mail.php';
 
+require_once __DIR__ . '/../src/Repositories/Core/BaseRepository.php';
+require_once __DIR__ . '/../src/Repositories/ClipboardRepository.php';
+require_once __DIR__ . '/../src/Repositories/ItemRepository.php';
+require_once __DIR__ . '/../src/Repositories/ResourceRepository.php';
+require_once __DIR__ . '/../src/Repositories/SubscriptionRepository.php';
+require_once __DIR__ . '/../src/Repositories/ExpirationRepository.php';
+require_once __DIR__ . '/../src/Services/ClipboardService.php';
+
+$gcService = new ClipboardService(
+    new ClipboardRepository($pdo),
+    new ResourceTypeRepository($pdo),
+    $pdo
+);
+$gcService->runGC();
+unset($gcService);
+
 // 2. Включваме рутера
 require_once __DIR__ . '/Router.php';
 $router = new Router($pdo);
@@ -30,6 +46,8 @@ $router->post('clipboard/create', 'ClipboardController', 'create');
 $router->post('clipboard/item/create', 'ClipboardController', 'createItem');
 $router->post('clipboard/item/delete', 'ClipboardController', 'deleteItem');
 $router->post('clipboard/subscribe', 'ClipboardController', 'toggleSubscribe');
+$router->get('clipboard/edit', 'ClipboardController', 'editGet');
+$router->post('clipboard/edit', 'ClipboardController', 'editPost');
 $router->post('clipboard/subscribe/email', 'ClipboardController', 'updateEmailPref');
 $router->get('clipboard/share', 'ClipboardController', 'shareGet');
 $router->post('clipboard/share', 'ClipboardController', 'sharePost');
@@ -44,6 +62,9 @@ $router->get('register', 'AuthController', 'registerGet');
 $router->post('register', 'AuthController', 'registerPost');
 $router->get('logout', 'AuthController', 'logout');
 $router->get('profile', 'ProfileController', 'show');
+$router->get('admin', 'AdminController', 'index');
+$router->get('admin/export', 'AdminController', 'export');
+$router->post('admin/import', 'AdminController', 'import');
 // $router->get('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->post('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 

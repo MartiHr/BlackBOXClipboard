@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../Repositories/ItemRepository.php';
 require_once __DIR__ . '/../Repositories/SubscriptionRepository.php';
 require_once __DIR__ . '/../Repositories/NotificationRepository.php';
+require_once __DIR__ . '/../Repositories/ExpirationRepository.php';
 require_once __DIR__ . '/../Mail/Mailer.php';
 
 class ClipboardService
@@ -12,6 +13,7 @@ class ClipboardService
     private ItemRepository $itemRepo;
     private SubscriptionRepository $subRepo;
     private NotificationRepository $notifRepo;
+    private ExpirationRepository $expRepo;
     private PDO $db;
 
     public function __construct(
@@ -24,6 +26,7 @@ class ClipboardService
         $this->itemRepo = new ItemRepository($db);
         $this->subRepo = new SubscriptionRepository($db);
         $this->notifRepo = new NotificationRepository($db);
+        $this->expRepo = new ExpirationRepository($db);
         $this->db = $db;
     }
 
@@ -57,10 +60,44 @@ class ClipboardService
                 $this->clipRepo->attachResourceTypes($clipboardId, $allowedTypes);
             }
 
+            $this->subRepo->subscribe($clipboardId, $userId, true);
+
             $this->db->commit();
 
             return $clipboardId;
 
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function updateClipboard(int $id, array $data, int $userId): void
+    {
+        $clipboard = $this->clipRepo->getById($id);
+        if (!$clipboard) {
+            throw new Exception('Clipboard not found');
+        }
+
+        $isAdmin = ($_SESSION['role'] ?? null) === 'admin';
+        if ((int) $clipboard['owner_id'] !== $userId && !$isAdmin) {
+            throw new Exception('Not authorized to edit this clipboard');
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->clipRepo->update($id, $data);
+
+            if (isset($data['allowed_resource_types'])) {
+                $allowedTypes = $data['allowed_resource_types'];
+                $this->clipRepo->clearAllowedResourceTypes($id);
+                if (!empty($allowedTypes)) {
+                    $existingIds = $this->typeRepo->existsMany($allowedTypes);
+                    $this->clipRepo->attachResourceTypes($id, $existingIds);
+                }
+            }
+
+            $this->db->commit();
         } catch (Throwable $e) {
             $this->db->rollBack();
             throw $e;
@@ -77,26 +114,26 @@ class ClipboardService
         return $this->clipRepo->getAll();
     }
 
-    public function countClipboards(): int
+    public function countClipboards(array $filters = []): int
     {
-        return $this->clipRepo->countAll();
+        return $this->clipRepo->countAll($filters);
     }
 
-    public function countClipboardsForUser(?int $userId): int
+    public function countClipboardsForUser(?int $userId, array $filters = []): int
     {
-        return $this->clipRepo->countForUser($userId);
+        return $this->clipRepo->countForUser($userId, $filters);
     }
 
-    public function getClipboardsPage(int $page, int $perPage): array
+    public function getClipboardsPage(int $page, int $perPage, array $filters = []): array
     {
         $offset = ($page - 1) * $perPage;
-        return $this->clipRepo->getPage($perPage, $offset);
+        return $this->clipRepo->getPage($perPage, $offset, $filters);
     }
 
-    public function getClipboardsPageForUser(?int $userId, int $page, int $perPage): array
+    public function getClipboardsPageForUser(?int $userId, int $page, int $perPage, array $filters = []): array
     {
         $offset = ($page - 1) * $perPage;
-        return $this->clipRepo->getPageForUser($userId, $perPage, $offset);
+        return $this->clipRepo->getPageForUser($userId, $perPage, $offset, $filters);
     }
 
     public function getClipboardById(int $id): ?array
@@ -205,6 +242,19 @@ class ClipboardService
             }
         }
 
+        $expiresIn = $data['expires_in'] ?? null;
+        if ($expiresIn) {
+            $seconds = (int) $expiresIn;
+            if ($seconds > 0) {
+                $this->expRepo->create([
+                    'clipboard_share_item_id' => $itemId,
+                    'expires_at' => date('Y-m-d H:i:s', time() + $seconds),
+                    'max_views' => null,
+                    'one_time' => 0,
+                ]);
+            }
+        }
+
         $subscribers = $this->subRepo->getSubscribers($clipboardId);
         foreach ($subscribers as $sub) {
             $subUserId = (int) $sub['user_id'];
@@ -299,7 +349,61 @@ class ClipboardService
         ];
     }
 
-    public function deleteItem(int $itemId, int $userId): void
+    public function runGC(): void
+    {
+        $expired = $this->expRepo->getExpired();
+        foreach ($expired as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+
+            $subscribers = $this->subRepo->getSubscribers((int) $e['clipboard_id']);
+            foreach ($subscribers as $sub) {
+                $this->notifRepo->create([
+                    'user_id' => (int) $sub['user_id'],
+                    'clipboard_id' => (int) $e['clipboard_id'],
+                    'clipboard_share_item_id' => (int) $e['clipboard_share_item_id'],
+                    'type' => 'item_expired',
+                    'message' => 'Запис изтече в клипборд',
+                ]);
+            }
+
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
+
+        $maxViewed = $this->expRepo->getMaxViewed();
+        foreach ($maxViewed as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
+
+        $oneTime = $this->expRepo->getOneTimeConsumed();
+        foreach ($oneTime as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
+    }
+
+    public function deleteItem(int $itemId, int $userId, bool $isAdmin = false): void
     {
         $item = $this->itemRepo->getById($itemId);
         if (!$item) {
@@ -311,7 +415,7 @@ class ClipboardService
             throw new Exception('Clipboard not found');
         }
 
-        if ((int) $clipboard['owner_id'] !== $userId) {
+        if (!$isAdmin && (int) $clipboard['owner_id'] !== $userId) {
             throw new Exception('Not authorized to delete items in this clipboard');
         }
 
@@ -322,8 +426,6 @@ class ClipboardService
             }
         }
 
-        $this->itemRepo->deleteById($itemId);
-
         $clipboardId = (int) $item['clipboard_id'];
         $subscribers = $this->subRepo->getSubscribers($clipboardId);
         foreach ($subscribers as $sub) {
@@ -333,7 +435,7 @@ class ClipboardService
             $this->notifRepo->create([
                 'user_id' => $subUserId,
                 'clipboard_id' => $clipboardId,
-                'clipboard_share_item_id' => $itemId,
+                'clipboard_share_item_id' => null,
                 'type' => 'item_deleted',
                 'message' => 'Запис беше премахнат от "' . $clipboard['name'] . '"',
             ]);
@@ -347,6 +449,8 @@ class ClipboardService
                 );
             }
         }
+
+        $this->itemRepo->deleteById($itemId);
     }
 
     public function getAllowedResourceTypesForClipboard(int $clipboardId): array

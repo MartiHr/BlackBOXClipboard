@@ -30,6 +30,11 @@
                     <span class="meta-label">Обекти</span>
                     <strong><?= count($items) ?></strong>
                 </div>
+                <?php if ($isOwner || $isAdmin): ?>
+                <a href="/clipboard/edit?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit" title="Редактирай">
+                    <span class="material-symbols-outlined">edit</span> Редактирай
+                </a>
+                <?php endif; ?>
                 <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
                 <button class="btn btn-outline btn-fit share-url-btn" title="Копирай връзката">
                     <span class="material-symbols-outlined">share</span> Сподели
@@ -100,6 +105,16 @@
                             <option value="image">Изображение</option>
                             <option value="file">Файл</option>
                         </select>
+                        <select id="lifespanSelector" class="type-selector" title="Автоматично изтриване">
+                            <option value="">Без срок</option>
+                            <option value="60">1 минута</option>
+                            <option value="600">10 минути</option>
+                            <option value="3600">1 час</option>
+                            <option value="14400">4 часа</option>
+                            <option value="86400">1 ден</option>
+                            <option value="604800">7 дни</option>
+                            <option value="2592000">30 дни</option>
+                        </select>
                         <span class="input-type-hint" id="typeHint">Определяне на типа...</span>
                     </div>
                     <button class="btn btn-primary btn-fit" id="shareBtn">Сподели</button>
@@ -141,7 +156,7 @@
                                 </button>
                                 <?php endif; ?>
                                 <?php endif; ?>
-                                <?php if ($isOwner): ?>
+                                <?php if ($isOwner || $isAdmin): ?>
                                 <button class="btn btn-icon-only btn-outline delete-item-btn" data-id="<?= (int) $item['id'] ?>" title="Изтрий">
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>

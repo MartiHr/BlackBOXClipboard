@@ -67,69 +67,107 @@ class ClipboardRepository extends BaseRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function countAll(): int
+    private function buildSearchParams(array $filters): array
     {
-        $stmt = $this->query('SELECT COUNT(*) FROM clipboards');
-        return (int) $stmt->fetchColumn();
-    }
+        $conditions = [];
+        $params = [];
 
-    public function countForUser(?int $userId): int
-    {
-        if ($userId) {
-            $stmt = $this->query(
-                'SELECT COUNT(*) FROM clipboards WHERE visibility = "public" OR owner_id = :owner_id',
-                [':owner_id' => $userId]
-            );
-        } else {
-            $stmt = $this->query('SELECT COUNT(*) FROM clipboards WHERE visibility = "public"');
+        if (!empty($filters['search'])) {
+            $searchVal = '%' . $filters['search'] . '%';
+            $conditions[] = '(name LIKE :search1 OR description LIKE :search2)';
+            $params[':search1'] = $searchVal;
+            $params[':search2'] = $searchVal;
         }
+
+        if (!empty($filters['visibility'])) {
+            $conditions[] = 'visibility = :visibility';
+            $params[':visibility'] = $filters['visibility'];
+        }
+
+        if (!empty($filters['mode'])) {
+            $conditions[] = 'mode = :mode';
+            $params[':mode'] = $filters['mode'];
+        }
+
+        $orderMap = [
+            'name' => 'name',
+            'created' => 'created_at',
+        ];
+        $sortField = $orderMap[$filters['sort'] ?? ''] ?? 'id';
+        $orderDir = strtoupper($filters['order'] ?? 'DESC');
+        if (!in_array($orderDir, ['ASC', 'DESC'], true)) {
+            $orderDir = 'DESC';
+        }
+
+        return [$conditions, $params, $sortField, $orderDir];
+    }
+
+    public function countAll(array $filters = []): int
+    {
+        [$conditions, $params] = $this->buildSearchParams($filters);
+        $where = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
+        $stmt = $this->query("SELECT COUNT(*) FROM clipboards $where", $params);
         return (int) $stmt->fetchColumn();
     }
 
-    public function getPage(int $limit, int $offset): array
+    public function countForUser(?int $userId, array $filters = []): int
     {
+        [$conditions, $params] = $this->buildSearchParams($filters);
+
+        if ($userId) {
+            $conditions[] = '(visibility = "public" OR owner_id = :owner_id)';
+            $params[':owner_id'] = $userId;
+        } else {
+            $conditions[] = 'visibility = "public"';
+        }
+
+        $where = 'WHERE ' . implode(' AND ', $conditions);
+        $stmt = $this->query("SELECT COUNT(*) FROM clipboards $where", $params);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function getPage(int $limit, int $offset, array $filters = []): array
+    {
+        [$conditions, $params, $sortField, $orderDir] = $this->buildSearchParams($filters);
+        $where = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
+
         $stmt = $this->query(
-            'SELECT id, name, description, owner_id, visibility, mode, created_at
+            "SELECT id, name, description, owner_id, visibility, mode, created_at
             FROM clipboards
-            ORDER BY id DESC
-            LIMIT :limit OFFSET :offset',
-            [
-                ':limit' => $limit,
-                ':offset' => $offset,
-            ]
+            $where
+            ORDER BY $sortField $orderDir
+            LIMIT :limit OFFSET :offset",
+            $params
         );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getPageForUser(?int $userId, int $limit, int $offset): array
+    public function getPageForUser(?int $userId, int $limit, int $offset, array $filters = []): array
     {
+        [$conditions, $params, $sortField, $orderDir] = $this->buildSearchParams($filters);
+
         if ($userId) {
-            $stmt = $this->query(
-                'SELECT id, name, description, owner_id, visibility, mode, created_at
-                FROM clipboards
-                WHERE visibility = "public" OR owner_id = :owner_id
-                ORDER BY id DESC
-                LIMIT :limit OFFSET :offset',
-                [
-                    ':owner_id' => $userId,
-                    ':limit' => $limit,
-                    ':offset' => $offset,
-                ]
-            );
+            $conditions[] = '(visibility = "public" OR owner_id = :owner_id)';
+            $params[':owner_id'] = $userId;
         } else {
-            $stmt = $this->query(
-                'SELECT id, name, description, owner_id, visibility, mode, created_at
-                FROM clipboards
-                WHERE visibility = "public"
-                ORDER BY id DESC
-                LIMIT :limit OFFSET :offset',
-                [
-                    ':limit' => $limit,
-                    ':offset' => $offset,
-                ]
-            );
+            $conditions[] = 'visibility = "public"';
         }
+
+        $where = 'WHERE ' . implode(' AND ', $conditions);
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
+
+        $stmt = $this->query(
+            "SELECT id, name, description, owner_id, visibility, mode, created_at
+            FROM clipboards
+            $where
+            ORDER BY $sortField $orderDir
+            LIMIT :limit OFFSET :offset",
+            $params
+        );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -201,6 +239,34 @@ class ClipboardRepository extends BaseRepository
         );
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update(int $id, array $data): void
+    {
+        $sets = [];
+        $params = [':id' => $id];
+
+        foreach (['name', 'description', 'visibility', 'mode'] as $col) {
+            if (array_key_exists($col, $data)) {
+                $sets[] = "$col = :$col";
+                $params[":$col"] = $data[$col];
+            }
+        }
+
+        if (!empty($sets)) {
+            $this->query(
+                'UPDATE clipboards SET ' . implode(', ', $sets) . ' WHERE id = :id',
+                $params
+            );
+        }
+    }
+
+    public function clearAllowedResourceTypes(int $clipboardId): void
+    {
+        $this->query(
+            'DELETE FROM clipboard_allowed_resource_types WHERE clipboard_id = :clipboard_id',
+            [':clipboard_id' => $clipboardId]
+        );
     }
 
     public function updateShareCode(int $clipboardId, string $shareCode): void

@@ -9,6 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    var selectAll = document.getElementById('selectAllTypes');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            var checked = this.checked;
+            document.querySelectorAll('.resource-grid input[name="types[]"]').forEach(function(cb) {
+                cb.checked = checked;
+            });
+        });
+    }
+
     var form = document.getElementById('createForm');
     var submitBtn = form.querySelector('button[type="submit"]');
     var toggleTypesCheckbox = document.getElementById('toggleResourceTypes');

@@ -15,10 +15,6 @@
                 </div>
 
                 <div class="form-group">
-                    <div class="label-row">
-                        <label for="password">Парола</label>
-                        <a href="#">Забравена?</a>
-                    </div>
                     <input type="password" id="password" name="password" class="form-control mono-input" required>
                 </div>
 
@@ -27,11 +23,6 @@
 
             <div class="form-footer-redirect">
                 <p>Нямате акаунт? <a href="/register">Регистрирайте се</a></p>
-            </div>
-
-            <div class="encryption-badge">
-                <span class="material-symbols-outlined">lock</span>
-                <span>Криптиране тип край-до-край</span>
             </div>
         </div>
 
