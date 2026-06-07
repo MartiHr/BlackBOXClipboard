@@ -40,6 +40,7 @@ $router->post('login', 'AuthController', 'loginPost');
 $router->get('register', 'AuthController', 'registerGet');
 $router->post('register', 'AuthController', 'registerPost');
 $router->get('logout', 'AuthController', 'logout');
+$router->get('profile', 'ProfileController', 'show');
 // $router->get('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->post('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 
