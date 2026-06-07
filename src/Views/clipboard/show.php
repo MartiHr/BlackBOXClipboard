@@ -92,7 +92,7 @@
                                 <button class="btn btn-icon-only btn-outline download-btn" data-content="<?= htmlspecialchars($item['content'], ENT_QUOTES) ?>" title="Свали">
                                     <span class="material-symbols-outlined">download</span>
                                 </button>
-                                <?php if (str_starts_with($item['content'], 'http')): ?>
+                                <?php if (str_starts_with($item['content'], 'http') || str_starts_with($item['content'], '/file')): ?>
                                 <button class="btn btn-icon-only btn-outline url-copy-btn" data-content="<?= htmlspecialchars($item['content'], ENT_QUOTES) ?>" title="Копирай URL">
                                     <span class="material-symbols-outlined">link</span>
                                 </button>
