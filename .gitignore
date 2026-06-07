@@ -474,3 +474,4 @@ composer.lock
 *.scss.map
 
 /temp_files/*
+/storage

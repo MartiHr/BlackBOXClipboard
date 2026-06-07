@@ -109,16 +109,18 @@ class ClipboardService
             $content = $item['content'] ?? '';
             $displayType = $this->detectType($content);
 
+            $fileExt = '';
             if (!empty($item['file_path'])) {
                 $content = '/file?id=' . $item['id'];
-                $displayType = 'image';
+                $fileExt = strtolower(pathinfo($item['file_path'], PATHINFO_EXTENSION));
+                $displayType = in_array($fileExt, ['jpg','jpeg','png','gif','webp','svg','bmp']) ? 'image' : 'file';
             }
 
             return [
                 'id' => (int) $item['id'],
                 'content' => $content,
                 'display_type' => $displayType,
-                'type_label' => $this->typeLabel($displayType),
+                'type_label' => $this->typeLabel($displayType, $fileExt),
                 'user_name' => htmlspecialchars($item['user_name'] ?? ''),
                 'created_at' => $item['created_at'],
                 'time_ago' => $this->timeAgo($item['created_at']),
@@ -306,14 +308,31 @@ class ClipboardService
         return 'text';
     }
 
-    private function typeLabel(string $type): string
+    private function typeLabel(string $type, string $ext = ''): string
     {
+        if ($type === 'file') {
+            $labels = [
+                'pdf' => 'PDF',
+                'zip' => 'ZIP',
+                'rar' => 'RAR',
+                'tar' => 'TAR',
+                'json' => 'JSON',
+                'xml' => 'XML',
+                'csv' => 'CSV',
+                'txt' => 'TXT',
+                'doc' => 'DOC',
+                'docx' => 'DOCX',
+                'yaml' => 'YAML',
+                'md' => 'MD',
+            ];
+            return $labels[$ext] ?? strtoupper($ext);
+        }
+
         return match ($type) {
             'text' => 'ТЕКСТ',
             'link' => 'ЛИНК',
             'code' => 'КОД',
             'image' => 'ИЗОБРАЖЕНИЕ',
-            'file' => 'ФАЙЛ',
             default => strtoupper($type),
         };
     }

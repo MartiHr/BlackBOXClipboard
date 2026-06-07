@@ -111,7 +111,7 @@
                                 <span class="item-time"><?= htmlspecialchars($item['time_ago']) ?></span>
                             </div>
                             <div class="item-card-actions">
-                                <?php if ($item['display_type'] === 'image'): ?>
+                                <?php if ($item['display_type'] === 'image' || $item['display_type'] === 'file'): ?>
                                 <button class="btn btn-icon-only btn-outline download-btn" data-content="<?= htmlspecialchars($item['content'], ENT_QUOTES) ?>" title="Свали">
                                     <span class="material-symbols-outlined">download</span>
                                 </button>
@@ -132,6 +132,14 @@
                         <div class="item-card-body">
                             <?php if ($item['display_type'] === 'image'): ?>
                                 <img src="<?= htmlspecialchars($item['content']) ?>" alt="Shared image" class="item-content-image" loading="lazy">
+                            <?php elseif ($item['display_type'] === 'file'): ?>
+                                <div class="item-content-file">
+                                    <span class="material-symbols-outlined file-card-icon">insert_drive_file</span>
+                                    <div>
+                                        <div class="file-name-label"><?= htmlspecialchars($item['type_label']) ?> документ</div>
+                                        <a href="<?= htmlspecialchars($item['content']) ?>" class="file-download-link" target="_blank">Изтегли файл</a>
+                                    </div>
+                                </div>
                             <?php elseif ($item['display_type'] === 'link'): ?>
                                 <a href="<?= htmlspecialchars($item['content']) ?>" target="_blank" rel="noopener" class="item-content-link">
                                     <span class="material-symbols-outlined link-icon">link</span>
