@@ -47,7 +47,7 @@ class HomeController extends Controller
                 'total'   => $totalPages,
             ],
             'extraCss'     => ['channels.css'],
-            'showNav'      => $isLoggedIn,
+            'showNav'      => true,
             'showActions'  => $isLoggedIn,
             'currentPage'  => 'home',
             'mainClass'    => 'dashboard-main',

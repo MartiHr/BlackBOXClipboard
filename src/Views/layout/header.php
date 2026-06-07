@@ -34,7 +34,11 @@
             <?php if (!empty($showNav)): ?>
             <nav class="nav-links">
                 <a href="/" <?= ($currentPage === 'home') ? 'class="active"' : '' ?>>Клипборди</a>
-                <a href="/clipboard/create">Нов клипборд</a>
+                <?php if (!empty($_SESSION['user_id'])): ?>
+                    <a href="/clipboard/create">Нов клипборд</a>
+                <?php else: ?>
+                    <a href="/clipboard/share">Следвай клипборд</a>
+                <?php endif; ?>
             </nav>
             <?php endif; ?>
             <div class="header-actions">

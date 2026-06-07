@@ -39,6 +39,28 @@ class ItemRepository extends BaseRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getNewItemsByClipboardId(int $clipboardId, int $lastId, int $limit = 50): array
+    {
+        $stmt = $this->query(
+            'SELECT csi.id, csi.title, csi.content, csi.file_path, rt.name as type,
+                    u.username as user_name, csi.created_at
+            FROM clipboard_share_items csi
+            LEFT JOIN resource_types rt ON csi.resource_type_id = rt.id
+            LEFT JOIN users u ON csi.user_id = u.id
+            WHERE csi.clipboard_id = :clipboard_id
+              AND csi.id > :last_id
+            ORDER BY csi.id ASC
+            LIMIT :limit',
+            [
+                ':clipboard_id' => $clipboardId,
+                ':last_id' => $lastId,
+                ':limit' => $limit,
+            ]
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getById(int $id): ?array
     {
         $stmt = $this->query(

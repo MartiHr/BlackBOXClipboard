@@ -88,6 +88,106 @@ class ClipboardController extends Controller
         ], 'Клипборд: ' . htmlspecialchars($clipboard['name']));
     }
 
+    public function shareGet(): void
+    {
+        $code = strtoupper(trim((string) ($_GET['code'] ?? '')));
+        $clipboard = null;
+        $items = [];
+        $error = null;
+
+        if ($code !== '') {
+            if (!preg_match('/^[A-Z2-9]{5}$/', $code)) {
+                $error = 'Невалиден код за споделяне.';
+            } else {
+                $clipboard = $this->service->getClipboardByShareCode($code);
+                if (!$clipboard) {
+                    $error = 'Няма клипборд за този код.';
+                } else {
+                    $items = $this->service->getClipboardItems((int) $clipboard['id'], 50);
+                }
+            }
+        }
+
+        $this->render('clipboard/share', [
+            'code'        => $code,
+            'clipboard'   => $clipboard,
+            'items'       => $items,
+            'error'       => $error,
+            'extraCss'    => ['share.css'],
+            'extraJs'     => ['polling.js'],
+            'showNav'     => true,
+            'showActions' => false,
+            'currentPage' => 'share',
+            'mainClass'   => 'share-main',
+            'showStatus'  => !empty($clipboard),
+            'statusText'  => 'Live sync active',
+        ], 'Share Clipboard');
+    }
+
+    public function sharePost(): void
+    {
+        $code = strtoupper(trim((string) ($_POST['code'] ?? '')));
+
+        if ($code === '' || !preg_match('/^[A-Z2-9]{5}$/', $code)) {
+            $this->shareRenderWithError('Невалиден код за споделяне.', $code);
+            return;
+        }
+
+        $this->redirect('clipboard/share?code=' . urlencode($code));
+    }
+
+    private function shareRenderWithError(string $error, string $code): void
+    {
+        $this->render('clipboard/share', [
+            'code'        => $code,
+            'clipboard'   => null,
+            'items'       => [],
+            'error'       => $error,
+            'extraCss'    => ['share.css'],
+            'extraJs'     => ['polling.js'],
+            'showNav'     => true,
+            'showActions' => false,
+            'currentPage' => 'share',
+            'mainClass'   => 'share-main',
+            'showStatus'  => false,
+        ], 'Share Clipboard');
+    }
+
+    public function getUpdates(): void
+    {
+        header('Content-Type: application/json');
+
+        $code = strtoupper(trim((string) ($_GET['code'] ?? '')));
+        $lastId = max(0, (int) ($_GET['last_id'] ?? 0));
+
+        if (!preg_match('/^[A-Z2-9]{5}$/', $code)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Невалиден код за споделяне.']);
+            return;
+        }
+
+        $clipboard = $this->service->getClipboardByShareCode($code);
+        if (!$clipboard) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Клипбордът не беше намерен.']);
+            return;
+        }
+
+        $items = $this->service->getNewClipboardItems((int) $clipboard['id'], $lastId, 50);
+        $newLastId = $lastId;
+        foreach ($items as $item) {
+            if ($item['id'] > $newLastId) {
+                $newLastId = $item['id'];
+            }
+        }
+
+        echo json_encode([
+            'success' => true,
+            'items' => $items,
+            'last_id' => $newLastId,
+        ]);
+    }
+
     public function create(): void
     {
         header('Content-Type: application/json');
