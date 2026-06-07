@@ -42,6 +42,7 @@ class ProfileController extends Controller
             'user'          => $user,
             'subscriptions' => $subscriptions,
             'extraCss'      => ['profile.css'],
+            'extraJs'       => ['profile.js'],
             'showNav'       => true,
             'showActions'   => true,
             'currentPage'   => 'profile',

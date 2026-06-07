@@ -323,6 +323,30 @@ class ClipboardService
         }
 
         $this->itemRepo->deleteById($itemId);
+
+        $clipboardId = (int) $item['clipboard_id'];
+        $subscribers = $this->subRepo->getSubscribers($clipboardId);
+        foreach ($subscribers as $sub) {
+            $subUserId = (int) $sub['user_id'];
+            if ($subUserId === $userId) continue;
+
+            $this->notifRepo->create([
+                'user_id' => $subUserId,
+                'clipboard_id' => $clipboardId,
+                'clipboard_share_item_id' => $itemId,
+                'type' => 'item_deleted',
+                'message' => 'Запис беше премахнат от "' . $clipboard['name'] . '"',
+            ]);
+
+            if (!empty($sub['notify_email']) && !empty($sub['email'])) {
+                $clipUrl = APP_URL . '/clipboard?id=' . $clipboardId;
+                Mailer::send(
+                    $sub['email'],
+                    'Запис премахнат от ' . $clipboard['name'],
+                    "Здравейте,\n\nЗапис беше премахнат от клипборд \"" . $clipboard['name'] . "\".\n\nМожете да видите клипборда тук: " . $clipUrl . "\n\n- BlackBOX Clipboard"
+                );
+            }
+        }
     }
 
     public function getAllowedResourceTypesForClipboard(int $clipboardId): array

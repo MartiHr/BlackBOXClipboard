@@ -31,6 +31,7 @@ class ClipboardController extends Controller
         $this->render('clipboard/create', [
             'resourceTypes' => $types,
             'extraCss'      => ['auth.css', 'create.css'],
+            'extraJs'       => ['clipboard-create.js'],
             'showNav'       => true,
             'showActions'   => true,
             'currentPage'   => 'create',
@@ -79,7 +80,7 @@ class ClipboardController extends Controller
             'isSubscribed' => $isSubscribed,
             'notifyEmail'  => $notifyEmail,
             'extraCss'     => ['auth.css', 'show.css'],
-            'extraJs'      => ['show.js'],
+            'extraJs'      => ['show.js', 'clipboard-show.js'],
             'showNav'      => $isLoggedIn,
             'showActions'  => $isLoggedIn,
             'currentPage'  => 'clipboard',
