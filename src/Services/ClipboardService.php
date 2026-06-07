@@ -150,7 +150,7 @@ class ClipboardService
             $this->itemRepo->deleteByClipboardId($clipboardId);
         }
 
-        $type = $this->detectType($content);
+        $type = $data['type'] ?? $this->detectType($content);
         $resourceType = $this->itemRepo->getResourceTypeByCategory($type);
         if (!$resourceType) {
             $resourceType = $this->itemRepo->getResourceTypeByCategory('text');
@@ -283,6 +283,10 @@ class ClipboardService
             return 'image';
         }
 
+        if (str_starts_with($trimmed, 'data:')) {
+            return 'file';
+        }
+
         if (preg_match('/^https?:\/\//i', $trimmed)) {
             return 'link';
         }
@@ -304,6 +308,7 @@ class ClipboardService
             'link' => 'ЛИНК',
             'code' => 'КОД',
             'image' => 'ИЗОБРАЖЕНИЕ',
+            'file' => 'ФАЙЛ',
             default => strtoupper($type),
         };
     }

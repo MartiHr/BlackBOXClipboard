@@ -40,12 +40,35 @@
             <?php if ($canPost): ?>
             <div class="input-section">
                 <textarea id="pasteInput" placeholder="Пейстни текст, линк или код тук..."></textarea>
-                <input type="file" id="fileInput" accept="text/*,image/*,.pdf,.zip,.csv,.json,.xml,.sql" style="display:none">
+
+                <div id="filePreview" class="file-preview" style="display:none">
+                    <img id="previewImage" class="file-preview-thumb" style="display:none" alt="preview">
+                    <div id="previewIcon" class="file-preview-icon" style="display:none">
+                        <span class="material-symbols-outlined" id="previewIconGlyph">description</span>
+                    </div>
+                    <div class="file-preview-info">
+                        <span id="previewFileName"></span>
+                        <span id="previewFileSize"></span>
+                    </div>
+                    <button type="button" id="removeFileBtn" class="btn btn-icon-only btn-outline" title="Премахни">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <input type="file" id="fileInput" accept="*/*" style="display:none">
                 <div class="input-actions">
                     <div class="input-left-group">
                         <button class="btn btn-icon-only btn-outline" id="fileBtn" title="Качи файл">
                             <span class="material-symbols-outlined">attach_file</span>
                         </button>
+                        <select id="typeSelector" class="type-selector">
+                            <option value="auto">Автоматично</option>
+                            <option value="text">Текст</option>
+                            <option value="link">Линк</option>
+                            <option value="code">Код</option>
+                            <option value="image">Изображение</option>
+                            <option value="file">Файл</option>
+                        </select>
                         <span class="input-type-hint" id="typeHint">Определяне на типа...</span>
                     </div>
                     <button class="btn btn-primary btn-fit" id="shareBtn">Сподели</button>
@@ -122,41 +145,104 @@
             const shareBtn = document.getElementById('shareBtn');
             const fileBtn = document.getElementById('fileBtn');
             const fileInput = document.getElementById('fileInput');
+            const typeSelector = document.getElementById('typeSelector');
+            const filePreview = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+            const previewIcon = document.getElementById('previewIcon');
+            const previewIconGlyph = document.getElementById('previewIconGlyph');
+            const previewFileName = document.getElementById('previewFileName');
+            const previewFileSize = document.getElementById('previewFileSize');
+            const removeFileBtn = document.getElementById('removeFileBtn');
+
+            var currentFileData = null;
+            var currentFileName = '';
+            var currentFileType = '';
 
             function detectType(text) {
                 const t = text.trim();
                 if (!t) return '';
                 if (/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(t) || t.startsWith('data:image/')) return 'image';
+                if (t.startsWith('data:')) return 'file';
                 if (/^https?:\/\//i.test(t)) return 'link';
                 if (/\b(function|class|if|else|for|while|foreach|switch|case|return|echo|print|require|include)\s*\(/i.test(t) ||
                     /[{};]/.test(t) || /<\?php/.test(t) || /^(import|export|const|let|var|def|lambda)\s/i.test(t)) return 'code';
                 return 'text';
             }
 
-            const typeLabels = { text: 'Текст', link: 'Линк', code: 'Код', image: 'Изображение' };
+            const typeLabels = { text: 'Текст', link: 'Линк', code: 'Код', image: 'Изображение', file: 'Файл' };
+
+            function updateTypeHint() {
+                if (currentFileData) {
+                    typeHint.textContent = 'Качен файл: ' + currentFileName;
+                    return;
+                }
+                const type = detectType(pasteInput.value);
+                typeHint.textContent = type ? 'Разпознат тип: ' + typeLabels[type] : 'Определяне на типа...';
+            }
 
             pasteInput.addEventListener('input', function() {
-                const type = detectType(this.value);
-                typeHint.textContent = type ? 'Разпознат тип: ' + typeLabels[type] : 'Определяне на типа...';
+                updateTypeHint();
             });
 
             fileBtn.addEventListener('click', function() {
                 fileInput.click();
             });
 
+            function showFilePreview(file, dataUri) {
+                currentFileData = dataUri;
+                currentFileName = file.name;
+                currentFileType = file.type;
+
+                pasteInput.style.display = 'none';
+                filePreview.style.display = 'flex';
+
+                previewFileName.textContent = file.name;
+                var size = file.size;
+                if (size < 1024) previewFileSize.textContent = size + ' B';
+                else if (size < 1048576) previewFileSize.textContent = (size / 1024).toFixed(1) + ' KB';
+                else previewFileSize.textContent = (size / 1048576).toFixed(1) + ' MB';
+
+                if (file.type.startsWith('image/')) {
+                    previewImage.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                    previewImage.src = dataUri;
+                } else {
+                    previewImage.style.display = 'none';
+                    previewImage.src = '';
+                    previewIcon.style.display = 'flex';
+                    if (file.type === 'application/pdf') previewIconGlyph.textContent = 'picture_as_pdf';
+                    else if (file.type.startsWith('text/') || file.type.includes('json') || file.type.includes('xml')) previewIconGlyph.textContent = 'description';
+                    else if (file.type.includes('zip') || file.type.includes('rar') || file.type.includes('tar')) previewIconGlyph.textContent = 'folder_zip';
+                    else previewIconGlyph.textContent = 'insert_drive_file';
+                }
+
+                typeSelector.value = 'auto';
+                updateTypeHint();
+            }
+
+            function clearFilePreview() {
+                currentFileData = null;
+                currentFileName = '';
+                currentFileType = '';
+                filePreview.style.display = 'none';
+                pasteInput.style.display = '';
+                previewImage.src = '';
+                previewImage.style.display = 'none';
+                previewIcon.style.display = 'none';
+                updateTypeHint();
+            }
+
             function readFile(file) {
                 if (file.type.startsWith('text/') || file.type === 'application/json' || file.type === 'application/xml') {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        pasteInput.value = e.target.result;
-                        pasteInput.dispatchEvent(new Event('input'));
+                        showFilePreview(file, e.target.result);
                     };
-                    reader.readAsText(file);
+                    reader.readAsDataURL(file);
                 } else {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        pasteInput.value = e.target.result;
-                        pasteInput.dispatchEvent(new Event('input'));
+                        showFilePreview(file, e.target.result);
                     };
                     reader.readAsDataURL(file);
                 }
@@ -168,6 +254,8 @@
                 readFile(file);
                 this.value = '';
             });
+
+            removeFileBtn.addEventListener('click', clearFilePreview);
 
             var dropZone = document.querySelector('.input-section');
 
@@ -188,21 +276,30 @@
             });
 
             shareBtn.addEventListener('click', function() {
-                const content = pasteInput.value.trim();
-                if (!content) return;
+                var content, type;
+
+                if (currentFileData) {
+                    content = currentFileData;
+                    type = typeSelector.value === 'auto' ? null : typeSelector.value;
+                } else {
+                    content = pasteInput.value.trim();
+                    if (!content) return;
+                    type = typeSelector.value === 'auto' ? null : typeSelector.value;
+                }
 
                 shareBtn.disabled = true;
                 shareBtn.textContent = 'Изпращане...';
 
-                const clipboardId = <?= (int) $clipboard['id'] ?>;
+                var payload = {
+                    clipboard_id: <?= (int) $clipboard['id'] ?>,
+                    content: content
+                };
+                if (type) payload.type = type;
 
                 fetch('/clipboard/item/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        clipboard_id: clipboardId,
-                        content: content
-                    })
+                    body: JSON.stringify(payload)
                 })
                 .then(r => r.json())
                 .then(d => {
