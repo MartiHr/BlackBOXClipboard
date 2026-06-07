@@ -12,6 +12,7 @@
             <link rel="stylesheet" href="/assets/css/<?= htmlspecialchars($css) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+    <script src="/assets/js/main.js" defer></script>
     <?php if (!empty($extraJs)): ?>
         <?php foreach ((array) $extraJs as $js): ?>
             <script src="/assets/js/<?= htmlspecialchars($js) ?>" defer></script>
@@ -38,6 +39,19 @@
             <?php endif; ?>
             <div class="header-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="notif-wrapper">
+                        <button id="notifBell" class="notif-bell" title="Нотификации">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span id="notifBadge" class="notif-badge" style="display:none">0</span>
+                        </button>
+                        <div id="notifDropdown" class="notif-dropdown" style="display:none">
+                            <div class="notif-dropdown-header">
+                                <span>Нотификации</span>
+                                <button id="markAllReadBtn" class="btn btn-text">Маркирай всички</button>
+                            </div>
+                            <div id="notifList" class="notif-list"></div>
+                        </div>
+                    </div>
                     <span><?= htmlspecialchars($_SESSION['username']) ?></span>
                     <a href="/logout" class="btn btn-outline">Изход</a>
                 <?php else: ?>

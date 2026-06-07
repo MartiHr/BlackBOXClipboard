@@ -1,12 +1,17 @@
 <?php
 
 require_once __DIR__ . '/../Repositories/ItemRepository.php';
+require_once __DIR__ . '/../Repositories/SubscriptionRepository.php';
+require_once __DIR__ . '/../Repositories/NotificationRepository.php';
+require_once __DIR__ . '/../Mail/Mailer.php';
 
 class ClipboardService
 {
     private ClipboardRepository $clipRepo;
     private ResourceTypeRepository $typeRepo;
     private ItemRepository $itemRepo;
+    private SubscriptionRepository $subRepo;
+    private NotificationRepository $notifRepo;
     private PDO $db;
 
     public function __construct(
@@ -17,6 +22,8 @@ class ClipboardService
         $this->clipRepo = $clipRepo;
         $this->typeRepo = $typeRepo;
         $this->itemRepo = new ItemRepository($db);
+        $this->subRepo = new SubscriptionRepository($db);
+        $this->notifRepo = new NotificationRepository($db);
         $this->db = $db;
     }
 
@@ -185,6 +192,29 @@ class ClipboardService
             }
         }
 
+        $subscribers = $this->subRepo->getSubscribers($clipboardId);
+        foreach ($subscribers as $sub) {
+            $subUserId = (int) $sub['user_id'];
+            if ($subUserId === $userId) continue;
+
+            $this->notifRepo->create([
+                'user_id' => $subUserId,
+                'clipboard_id' => $clipboardId,
+                'clipboard_share_item_id' => $itemId,
+                'type' => 'item_created',
+                'message' => 'Нов запис в "' . $clipboard['name'] . '"',
+            ]);
+
+            if (!empty($sub['notify_email']) && !empty($sub['email'])) {
+                $clipUrl = APP_URL . '/clipboard?id=' . $clipboardId;
+                Mailer::send(
+                    $sub['email'],
+                    'Нов запис в ' . $clipboard['name'],
+                    "Здравейте,\n\nНов запис беше добавен в клипборд \"" . $clipboard['name'] . "\".\n\nМожете да го видите тук: " . $clipUrl . "\n\n- BlackBOX Clipboard"
+                );
+            }
+        }
+
         return $itemId;
     }
 
@@ -285,6 +315,56 @@ class ClipboardService
     public function getAllowedResourceTypesForClipboard(int $clipboardId): array
     {
         return $this->clipRepo->getAllowedResourceTypes($clipboardId);
+    }
+
+    public function subscribe(int $clipboardId, int $userId, bool $notifyEmail = true): void
+    {
+        $this->subRepo->subscribe($clipboardId, $userId, $notifyEmail);
+    }
+
+    public function unsubscribe(int $clipboardId, int $userId): void
+    {
+        $this->subRepo->unsubscribe($clipboardId, $userId);
+    }
+
+    public function isSubscribed(int $clipboardId, int $userId): bool
+    {
+        return $this->subRepo->isSubscribed($clipboardId, $userId);
+    }
+
+    public function getNotifyEmail(int $clipboardId, int $userId): bool
+    {
+        return $this->subRepo->getNotifyEmail($clipboardId, $userId);
+    }
+
+    public function updateEmailPref(int $clipboardId, int $userId, bool $enabled): void
+    {
+        $this->subRepo->updateEmailPref($clipboardId, $userId, $enabled);
+    }
+
+    public function getSubscriptions(int $userId): array
+    {
+        return $this->subRepo->getByUser($userId);
+    }
+
+    public function getNotifications(int $userId, int $limit = 20): array
+    {
+        return $this->notifRepo->getByUser($userId, $limit);
+    }
+
+    public function countUnreadNotifications(int $userId): int
+    {
+        return $this->notifRepo->countUnread($userId);
+    }
+
+    public function markNotificationRead(int $id, int $userId): void
+    {
+        $this->notifRepo->markAsRead($id, $userId);
+    }
+
+    public function markAllNotificationsRead(int $userId): void
+    {
+        $this->notifRepo->markAllAsRead($userId);
     }
 
     private function buildShareCode(): string

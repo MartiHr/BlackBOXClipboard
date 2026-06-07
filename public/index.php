@@ -15,6 +15,7 @@ session_start();
 $pdo = require __DIR__ . '/../config/db.php';
 
 require_once __DIR__ . '/../config/storage.php';
+require_once __DIR__ . '/../config/mail.php';
 
 // 2. Включваме рутера
 require_once __DIR__ . '/Router.php';
@@ -29,7 +30,12 @@ $router->get('clipboard/create', 'ClipboardController', 'createGet');
 $router->post('clipboard/create', 'ClipboardController', 'create');
 $router->post('clipboard/item/create', 'ClipboardController', 'createItem');
 $router->post('clipboard/item/delete', 'ClipboardController', 'deleteItem');
+$router->post('clipboard/subscribe', 'ClipboardController', 'toggleSubscribe');
+$router->post('clipboard/subscribe/email', 'ClipboardController', 'updateEmailPref');
 $router->get('file', 'ClipboardController', 'serveFile');
+$router->get('notifications/poll', 'NotificationController', 'poll');
+$router->get('notifications/list', 'NotificationController', 'list');
+$router->post('notifications/read', 'NotificationController', 'read');
 $router->get('login', 'AuthController', 'loginGet');
 $router->post('login', 'AuthController', 'loginPost');
 $router->get('register', 'AuthController', 'registerGet');

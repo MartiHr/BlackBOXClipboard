@@ -40,6 +40,19 @@
                     <span class="share-code-badge"><?= htmlspecialchars($clipboard['share_code']) ?></span>
                 </button>
                 <?php endif; ?>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                <div class="subscribe-group">
+                    <button class="btn <?= $isSubscribed ? 'btn-primary' : 'btn-outline' ?> btn-fit subscribe-btn" data-clipboard-id="<?= (int) $clipboard['id'] ?>">
+                        <span class="material-symbols-outlined"><?= $isSubscribed ? 'notifications_active' : 'notifications' ?></span>
+                        <span class="subscribe-label"><?= $isSubscribed ? 'Абониран' : 'Абонирай се' ?></span>
+                    </button>
+                    <label class="switch-toggle" style="display:<?= $isSubscribed ? 'inline-flex' : 'none' ?>">
+                        <input type="checkbox" class="email-toggle" <?= $notifyEmail ? 'checked' : '' ?>>
+                        <span class="switch-slider"></span>
+                        <span class="switch-label">Email</span>
+                    </label>
+                </div>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="allowed-types-section">

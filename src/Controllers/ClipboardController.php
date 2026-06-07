@@ -67,18 +67,23 @@ class ClipboardController extends Controller
         $allowedTypes = $this->service->getAllowedResourceTypesForClipboard($id);
 
         $canPost = $isLoggedIn && ($isPublic || $isOwner);
+        $isSubscribed = $isLoggedIn && $this->service->isSubscribed($id, $_SESSION['user_id']);
+        $notifyEmail = $isSubscribed && $this->service->getNotifyEmail($id, $_SESSION['user_id']);
 
         $this->render('clipboard/show', [
-            'clipboard'   => $clipboard,
-            'items'       => $items,
+            'clipboard'    => $clipboard,
+            'items'        => $items,
             'allowedTypes' => $allowedTypes,
-            'isOwner'     => $isOwner,
-            'canPost'     => $canPost,
-            'extraCss'    => ['auth.css', 'show.css'],
-            'showNav'     => $isLoggedIn,
-            'showActions' => $isLoggedIn,
-            'currentPage' => 'clipboard',
-            'mainClass'   => 'clipboard-main',
+            'isOwner'      => $isOwner,
+            'canPost'      => $canPost,
+            'isSubscribed' => $isSubscribed,
+            'notifyEmail'  => $notifyEmail,
+            'extraCss'     => ['auth.css', 'show.css'],
+            'extraJs'      => ['show.js'],
+            'showNav'      => $isLoggedIn,
+            'showActions'  => $isLoggedIn,
+            'currentPage'  => 'clipboard',
+            'mainClass'    => 'clipboard-main',
         ], 'Клипборд: ' . htmlspecialchars($clipboard['name']));
     }
 
@@ -221,6 +226,71 @@ class ClipboardController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    public function updateEmailPref(): void
+    {
+        header('Content-Type: application/json');
+
+        if (!AuthService::isLoggedIn()) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $clipboardId = (int) ($input['clipboard_id'] ?? 0);
+        $enabled = !empty($input['notify_email']);
+
+        if (!$clipboardId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Clipboard ID is required']);
+            return;
+        }
+
+        try {
+            $this->service->updateEmailPref($clipboardId, $_SESSION['user_id'], $enabled);
+            echo json_encode(['success' => true, 'notify_email' => $enabled]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function toggleSubscribe(): void
+    {
+        header('Content-Type: application/json');
+
+        if (!AuthService::isLoggedIn()) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $clipboardId = (int) ($input['clipboard_id'] ?? 0);
+        $subscribe = !empty($input['subscribe']);
+        $notifyEmail = !empty($input['notify_email']);
+
+        if (!$clipboardId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Clipboard ID is required']);
+            return;
+        }
+
+        try {
+            if ($subscribe) {
+                $this->service->subscribe($clipboardId, $_SESSION['user_id'], $notifyEmail);
+            } else {
+                $this->service->unsubscribe($clipboardId, $_SESSION['user_id']);
+            }
+
+            echo json_encode(['success' => true, 'subscribed' => $subscribe, 'notify_email' => $notifyEmail]);
+
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
         }
     }
 }

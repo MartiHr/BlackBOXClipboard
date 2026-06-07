@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 valid = false;
             }
 
-            if (password.value.length < 8) {
+            if (password.value.length < 5) {
                 showError(password, 'Поне 8 символа');
                 valid = false;
             }
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showError(this, 'Поне 3 символа');
                 }
 
-                if (this.id === 'password' && this.value.length > 0 && this.value.length < 8) {
+                if (this.id === 'password' && this.value.length > 0 && this.value.length < 5) {
                     showError(this, 'Поне 8 символа');
                 }
             });
