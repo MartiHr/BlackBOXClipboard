@@ -34,7 +34,6 @@ class Env
 
             $vars[$matches[1]] = $value;
             $_ENV[$matches[1]] = $value;
-            putenv($matches[1] . '=' . $value);
         }
 
         return $vars;

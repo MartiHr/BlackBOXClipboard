@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.textContent = 'Създаване...';
 
         var checked = Array.from(this.querySelectorAll('input[name="types[]"]:checked')).map(function(c) { return parseInt(c.value); });
-        fetch('/clipboard/create', {
+        fetch(window.BASE_PATH + '/clipboard/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
         }).then(function(r) { return r.json(); }).then(function(d) {
             if (d.success) {
-                window.location.href = '/';
+                window.location.href = window.BASE_PATH + '/';
             } else {
                 alert(d.error || 'Грешка при създаване');
                 submitBtn.disabled = false;

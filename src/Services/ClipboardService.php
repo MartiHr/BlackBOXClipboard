@@ -173,7 +173,7 @@ class ClipboardService
 
             $fileExt = '';
             if (!empty($item['file_path'])) {
-                $content = '/file?id=' . $item['id'];
+                $content = BASE_PATH . '/file?id=' . $item['id'];
                 $fileExt = strtolower(pathinfo($item['file_path'], PATHINFO_EXTENSION));
                 $displayType = in_array($fileExt, ['jpg','jpeg','png','gif','webp','svg','bmp']) ? 'image' : 'file';
             }

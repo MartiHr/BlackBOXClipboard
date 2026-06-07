@@ -13,7 +13,7 @@ abstract class Controller
 
     protected function redirect(string $page): void 
     {
-        header("Location: /" . $page);
+        header("Location: " . BASE_PATH . "/" . $page);
         exit;
     }
 

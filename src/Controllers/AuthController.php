@@ -100,7 +100,7 @@ class AuthController extends Controller
                 $_SESSION['user_id'] = (int) $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
-                header('Location: /');
+                header('Location: ' . BASE_PATH . '/');
                 exit;
             }
         }

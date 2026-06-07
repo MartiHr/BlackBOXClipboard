@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var newEnabled = !enabled;
             var icon = this.querySelector('.material-symbols-outlined');
 
-            fetch('/clipboard/subscribe/email', {
+            fetch(window.BASE_PATH + '/clipboard/subscribe/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

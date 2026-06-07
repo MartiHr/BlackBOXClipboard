@@ -5,12 +5,12 @@
                     Клипборди за синхронизация в реално време за вашите клипборд фрагменти. Наблюдавайте състоянието и прехвърляйте данни между инстанции.
                 </p>
             </div>
-            <a href="/clipboard/create" class="btn btn-primary btn-fit">
+            <a href="<?= BASE_PATH ?>/clipboard/create" class="btn btn-primary btn-fit">
                 <span class="material-symbols-outlined">add</span> Нов клипборд
             </a>
         </section>
 
-        <form class="filter-bar" method="GET" action="/">
+        <form class="filter-bar" method="GET" action="<?= BASE_PATH ?>/">
             <input type="text" name="search" class="form-control filter-search" placeholder="Търси клипборд..." value="<?= htmlspecialchars($filters['search'] ?? '') ?>">
             <select name="visibility" class="form-control filter-select">
                 <option value="">Всички видимости</option>
@@ -31,7 +31,7 @@
                 <option value="asc" <?= ($filters['order'] ?? '') === 'asc' ? 'selected' : '' ?>>Възх.</option>
             </select>
             <button type="submit" class="btn btn-primary btn-fit">Филтър</button>
-            <a href="/" class="btn btn-outline btn-fit">Изчисти</a>
+            <a href="<?= BASE_PATH ?>/" class="btn btn-outline btn-fit">Изчисти</a>
         </form>
 
         <section class="bento-grid">
@@ -58,7 +58,7 @@
                                 <span>Вид:</span>
                                 <span><?= $c['mode'] === 'multi' ? 'Множествен' : 'Единичен' ?></span>
                             </div>
-                            <a href="/clipboard?id=<?= htmlspecialchars($c['id']) ?>" class="btn btn-outline card-action-btn">Отвори</a>
+                            <a href="<?= BASE_PATH ?>/clipboard?id=<?= htmlspecialchars($c['id']) ?>" class="btn btn-outline card-action-btn">Отвори</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -81,7 +81,7 @@
 
             <?php endif; ?>
 
-            <a href="/clipboard/create" class="empty-card">
+            <a href="<?= BASE_PATH ?>/clipboard/create" class="empty-card">
                 <div class="icon-circle">
                     <span class="material-symbols-outlined">add</span>
                 </div>
@@ -98,8 +98,8 @@
                 $nextPage = $pagination['current'] + 1;
                 $prevDisabled = $pagination['current'] <= 1;
                 $nextDisabled = $pagination['current'] >= $pagination['total'];
-                $prevHref = $prevDisabled ? '#' : '/?page=' . $prevPage . ($queryString ? '&' . $queryString : '');
-                $nextHref = $nextDisabled ? '#' : '/?page=' . $nextPage . ($queryString ? '&' . $queryString : '');
+                $prevHref = $prevDisabled ? '#' : BASE_PATH . '/?page=' . $prevPage . ($queryString ? '&' . $queryString : '');
+                $nextHref = $nextDisabled ? '#' : BASE_PATH . '/?page=' . $nextPage . ($queryString ? '&' . $queryString : '');
             ?>
             <a class="pagination-button<?= $prevDisabled ? ' disabled' : '' ?>" href="<?= htmlspecialchars($prevHref) ?>" aria-disabled="<?= $prevDisabled ? 'true' : 'false' ?>">
                 <span class="material-symbols-outlined">chevron_left</span>

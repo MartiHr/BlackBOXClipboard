@@ -1,6 +1,6 @@
         <div class="admin-panel">
             <div class="breadcrumb">
-                <a href="/">Клипборди</a>
+                <a href="<?= BASE_PATH ?>/">Клипборди</a>
                 <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
                 <span class="breadcrumb-current">Админ панел</span>
             </div>
@@ -12,7 +12,7 @@
                     <span class="material-symbols-outlined admin-card-icon">file_download</span>
                     <h2>Export JSON</h2>
                     <p>Изтегли текущата конфигурация на клипбордовете като JSON файл.</p>
-                    <a href="/admin/export" class="btn btn-primary btn-fit">Изтегли</a>
+                    <a href="<?= BASE_PATH ?>/admin/export" class="btn btn-primary btn-fit">Изтегли</a>
                 </div>
 
                 <div class="admin-card">
@@ -40,7 +40,7 @@
             btn.textContent = 'Качване...';
             msg.textContent = '';
 
-            fetch('/admin/import', {
+            fetch(window.BASE_PATH + '/admin/import', {
                 method: 'POST',
                 body: fd
             })

@@ -1,8 +1,8 @@
         <div class="create-container">
             <div class="breadcrumb">
-                <a href="/">Клипборди</a>
+                <a href="<?= BASE_PATH ?>/">Клипборди</a>
                 <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
-                <a href="/clipboard?id=<?= (int) $clipboard['id'] ?>"><?= htmlspecialchars($clipboard['name']) ?></a>
+                <a href="<?= BASE_PATH ?>/clipboard?id=<?= (int) $clipboard['id'] ?>"><?= htmlspecialchars($clipboard['name']) ?></a>
                 <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
                 <span class="breadcrumb-current">Редактиране</span>
             </div>
@@ -74,7 +74,7 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-fit">Запази</button>
-                        <a href="/clipboard?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit">Отказ</a>
+                        <a href="<?= BASE_PATH ?>/clipboard?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit">Отказ</a>
                     </div>
                 </form>
             </div>
@@ -118,7 +118,7 @@
                 btn.textContent = 'Запазване...';
 
                 var checked = Array.from(this.querySelectorAll('input[name="types[]"]:checked')).map(function(c) { return parseInt(c.value); });
-                fetch('/clipboard/edit', {
+                fetch(BASE_PATH + '/clipboard/edit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -133,7 +133,7 @@
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     if (d.success) {
-                        window.location.href = '/clipboard?id=' + document.querySelector('input[name="id"]').value;
+                        window.location.href = BASE_PATH + '/clipboard?id=' + document.querySelector('input[name="id"]').value;
                     } else {
                         alert(d.error || 'Грешка при запазване');
                         btn.disabled = false;

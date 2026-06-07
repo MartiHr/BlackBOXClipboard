@@ -1,8 +1,10 @@
 <?php
 
+require_once __DIR__ . '/../config/app.php';
+
 session_set_cookie_params([
     'lifetime' => 0,
-    'path' => '/',
+    'path' => BASE_PATH ?: '/',
     'domain' => '',
     'secure' => true,
     'httponly' => true,
@@ -63,6 +65,9 @@ $router->get('admin/export', 'AdminController', 'export');
 $router->post('admin/import', 'AdminController', 'import');
 
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+if (BASE_PATH !== '' && str_starts_with($uri, BASE_PATH)) {
+    $uri = substr($uri, strlen(BASE_PATH));
+}
 $uri = trim($uri, '/');
 $page = $uri ?: 'home';
 

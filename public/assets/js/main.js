@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!notifBell) return;
 
     function pollNotifications() {
-        fetch('/notifications/poll')
+        fetch(window.BASE_PATH + '/notifications/poll')
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 if (d.unread > 0) {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadNotifications() {
-        fetch('/notifications/list')
+        fetch(window.BASE_PATH + '/notifications/list')
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 notifList.innerHTML = '';
@@ -32,10 +32,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 d.notifications.forEach(function(n) {
                     var el = document.createElement('a');
                     el.className = 'notif-item' + (n.is_read ? '' : ' notif-unread');
-                    el.href = '/clipboard?id=' + n.clipboard_id;
+                    el.href = window.BASE_PATH + '/clipboard?id=' + n.clipboard_id;
                     el.innerHTML = '<div class="notif-message">' + n.message + '</div><div class="notif-time">' + n.created_at + '</div>';
                     el.addEventListener('click', function(e) {
-                        fetch('/notifications/read', {
+                        fetch(window.BASE_PATH + '/notifications/read', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ id: n.id })
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (markAllReadBtn) {
         markAllReadBtn.addEventListener('click', function() {
-            fetch('/notifications/read', {
+            fetch(window.BASE_PATH + '/notifications/read', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ all: true })

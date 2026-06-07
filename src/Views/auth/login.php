@@ -22,7 +22,7 @@
             </form>
 
             <div class="form-footer-redirect">
-                <p>Нямате акаунт? <a href="/register">Регистрирайте се</a></p>
+                <p>Нямате акаунт? <a href="<?= BASE_PATH ?>/register">Регистрирайте се</a></p>
             </div>
         </div>
 

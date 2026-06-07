@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (type) payload.type = type;
         if (expiresIn) payload.expires_in = parseInt(expiresIn);
 
-        fetch('/clipboard/item/create', {
+        fetch(window.BASE_PATH + '/clipboard/item/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var btn = this;
         btn.disabled = true;
 
-        fetch('/clipboard/item/delete', {
+        fetch(window.BASE_PATH + '/clipboard/item/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ item_id: pendingDeleteId })

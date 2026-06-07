@@ -34,7 +34,7 @@
             </form>
 
             <div class="form-footer-redirect">
-                <p>Вече имате акаунт? <a href="/login">Влезте</a></p>
+                <p>Вече имате акаунт? <a href="<?= BASE_PATH ?>/login">Влезте</a></p>
             </div>
         </div>
 

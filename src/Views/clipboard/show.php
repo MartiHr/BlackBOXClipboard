@@ -1,6 +1,6 @@
         <div class="clipboard-panel">
             <div class="breadcrumb">
-                <a href="/">Клипборди</a>
+                <a href="<?= BASE_PATH ?>/">Клипборди</a>
                 <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
                 <span class="breadcrumb-current"><?= htmlspecialchars($clipboard['name']) ?></span>
             </div>
@@ -31,7 +31,7 @@
                     <strong><?= count($items) ?></strong>
                 </div>
                 <?php if ($isOwner || $isAdmin): ?>
-                <a href="/clipboard/edit?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit" title="Редактирай">
+                <a href="<?= BASE_PATH ?>/clipboard/edit?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit" title="Редактирай">
                     <span class="material-symbols-outlined">edit</span> Редактирай
                 </a>
                 <?php endif; ?>

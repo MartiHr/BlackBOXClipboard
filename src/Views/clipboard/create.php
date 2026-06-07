@@ -1,6 +1,6 @@
         <div class="create-container">
             <div class="breadcrumb">
-                <a href="/">Клипборди</a>
+                <a href="<?= BASE_PATH ?>/">Клипборди</a>
                 <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
                 <span class="breadcrumb-current">Нов клипборд</span>
             </div>
@@ -101,10 +101,10 @@
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-fit">Създай клипборд</button>
-                        <a href="/" class="btn btn-outline btn-fit">Отказ</a>
+                        <a href="<?= BASE_PATH ?>/" class="btn btn-outline btn-fit">Отказ</a>
                     </div>
                 </form>
             </div>
         </div>
 
-        <script src="/assets/js/clipboard-create.js" defer></script>
+        <script src="<?= BASE_PATH ?>/assets/js/clipboard-create.js" defer></script>

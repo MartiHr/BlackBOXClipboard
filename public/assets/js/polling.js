@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function fetchUpdates() {
         if (!shareCode) return;
 
-        fetch('/clipboard/updates?code=' + encodeURIComponent(shareCode) + '&last_id=' + encodeURIComponent(lastId))
+        fetch(window.BASE_PATH + '/clipboard/updates?code=' + encodeURIComponent(shareCode) + '&last_id=' + encodeURIComponent(lastId))
             .then(function(response) {
                 return response.json();
             })

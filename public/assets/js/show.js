@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var clipboardId = subBtn.dataset.clipboardId;
 
     function updateEmailPref(enabled) {
-        fetch('/clipboard/subscribe/email', {
+        fetch(window.BASE_PATH + '/clipboard/subscribe/email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var isSubscribed = this.classList.contains('btn-primary');
         var self = this;
 
-        fetch('/clipboard/subscribe', {
+        fetch(window.BASE_PATH + '/clipboard/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

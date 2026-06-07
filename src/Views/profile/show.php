@@ -18,7 +18,7 @@
             <div class="sub-list">
                 <?php foreach ($subscriptions as $sub): ?>
                     <div class="sub-item">
-                        <a href="/clipboard?id=<?= (int) $sub['clipboard_id'] ?>" class="sub-link">
+                        <a href="<?= BASE_PATH ?>/clipboard?id=<?= (int) $sub['clipboard_id'] ?>" class="sub-link">
                             <span class="sub-name"><?= htmlspecialchars($sub['clipboard_name']) ?></span>
                         </a>
                         <button class="sub-toggle" data-clipboard-id="<?= (int) $sub['clipboard_id'] ?>" data-enabled="<?= $sub['notify_email'] ? '1' : '0' ?>" title="Email нотификации">
@@ -31,4 +31,4 @@
     </section>
 </div>
 
-<script src="/assets/js/profile.js" defer></script>
+<script src="<?= BASE_PATH ?>/assets/js/profile.js" defer></script>

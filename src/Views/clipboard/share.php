@@ -13,7 +13,7 @@ foreach ($items as $item) {
 
 <div class="share-page">
     <div class="breadcrumb">
-        <a href="/">Клипборди</a>
+        <a href="<?= BASE_PATH ?>/">Клипборди</a>
         <span class="material-symbols-outlined breadcrumb-icon">chevron_right</span>
         <span class="breadcrumb-current">Live Share</span>
     </div>
@@ -28,7 +28,7 @@ foreach ($items as $item) {
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
-            <form method="post" action="/clipboard/share" class="share-code-form">
+            <form method="post" action="<?= BASE_PATH ?>/clipboard/share" class="share-code-form">
                 <label for="code">Код за следене</label>
                 <input id="code" name="code" value="<?= htmlspecialchars($code) ?>" class="form-control" maxlength="5" minlength="5" pattern="[A-Z2-9]{5}" placeholder="ABCDE" required>
                 <button class="btn btn-primary">Стартирай живия поток</button>
@@ -48,7 +48,7 @@ foreach ($items as $item) {
                 </div>
                 <div class="dashboard-meta">
                     <span class="dashboard-label">Код: <strong><?= htmlspecialchars($clipboard['share_code']) ?></strong></span>
-                    <button id="copyClipboardLinkBtn" class="btn btn-outline btn-fit" data-url="/clipboard?id=<?= (int) $clipboard['id'] ?>">Копирай линк</button>
+                    <button id="copyClipboardLinkBtn" class="btn btn-outline btn-fit" data-url="<?= BASE_PATH ?>/clipboard?id=<?= (int) $clipboard['id'] ?>">Копирай линк</button>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@ foreach ($items as $item) {
                     <span id="newItemsCount" class="feed-new-items">0 нови</span>
                 </div>
                 <div class="feed-actions">
-                    <a class="btn btn-outline" href="/clipboard?id=<?= (int) $clipboard['id'] ?>">Отвори пълния клипборд</a>
+                    <a class="btn btn-outline" href="<?= BASE_PATH ?>/clipboard?id=<?= (int) $clipboard['id'] ?>">Отвори пълния клипборд</a>
                 </div>
             </div>
 

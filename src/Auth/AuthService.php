@@ -79,7 +79,7 @@ class AuthService
     public static function requireLogin(): void
     {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: /login");
+            header("Location: " . BASE_PATH . "/login");
             exit;
         }
     }
