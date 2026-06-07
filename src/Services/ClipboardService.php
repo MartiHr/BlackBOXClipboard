@@ -114,26 +114,26 @@ class ClipboardService
         return $this->clipRepo->getAll();
     }
 
-    public function countClipboards(): int
+    public function countClipboards(array $filters = []): int
     {
-        return $this->clipRepo->countAll();
+        return $this->clipRepo->countAll($filters);
     }
 
-    public function countClipboardsForUser(?int $userId): int
+    public function countClipboardsForUser(?int $userId, array $filters = []): int
     {
-        return $this->clipRepo->countForUser($userId);
+        return $this->clipRepo->countForUser($userId, $filters);
     }
 
-    public function getClipboardsPage(int $page, int $perPage): array
+    public function getClipboardsPage(int $page, int $perPage, array $filters = []): array
     {
         $offset = ($page - 1) * $perPage;
-        return $this->clipRepo->getPage($perPage, $offset);
+        return $this->clipRepo->getPage($perPage, $offset, $filters);
     }
 
-    public function getClipboardsPageForUser(?int $userId, int $page, int $perPage): array
+    public function getClipboardsPageForUser(?int $userId, int $page, int $perPage, array $filters = []): array
     {
         $offset = ($page - 1) * $perPage;
-        return $this->clipRepo->getPageForUser($userId, $perPage, $offset);
+        return $this->clipRepo->getPageForUser($userId, $perPage, $offset, $filters);
     }
 
     public function getClipboardById(int $id): ?array

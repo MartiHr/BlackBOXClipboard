@@ -237,3 +237,42 @@
     font-size: 32px;
     font-weight: 600;
 }
+
+/* Search / Filter / Sort bar */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-bar input,
+.filter-bar select {
+    padding: 8px 12px;
+    border: 1px solid var(--outline-variant);
+    border-radius: 8px;
+    background: var(--surface-container-lowest);
+    color: var(--on-surface);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-bar input:focus,
+.filter-bar select:focus {
+    border-color: var(--primary);
+}
+
+.filter-search {
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-select {
+    min-width: 110px;
+}
+
+.filter-bar .btn {
+    white-space: nowrap;
+}

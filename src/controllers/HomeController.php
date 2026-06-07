@@ -27,19 +27,26 @@ class HomeController extends Controller
         $pageNumber = max(1, $pageNumber);
         $perPage = 5;
 
+        $filters = [];
+        if (!empty($_GET['search'])) $filters['search'] = trim($_GET['search']);
+        if (!empty($_GET['visibility'])) $filters['visibility'] = $_GET['visibility'];
+        if (!empty($_GET['mode'])) $filters['mode'] = $_GET['mode'];
+        if (!empty($_GET['sort'])) $filters['sort'] = $_GET['sort'];
+        if (!empty($_GET['order'])) $filters['order'] = $_GET['order'];
+
         $userId = AuthService::isLoggedIn() ? (int) $_SESSION['user_id'] : null;
         $isAdmin = AuthService::isLoggedIn() && ($_SESSION['role'] ?? null) === 'admin';
 
         if ($isAdmin) {
-            $totalClipboards = $this->service->countClipboards();
+            $totalClipboards = $this->service->countClipboards($filters);
             $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
             $pageNumber = min($pageNumber, $totalPages);
-            $clipboards = $this->service->getClipboardsPage($pageNumber, $perPage);
+            $clipboards = $this->service->getClipboardsPage($pageNumber, $perPage, $filters);
         } else {
-            $totalClipboards = $this->service->countClipboardsForUser($userId);
+            $totalClipboards = $this->service->countClipboardsForUser($userId, $filters);
             $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
             $pageNumber = min($pageNumber, $totalPages);
-            $clipboards = $this->service->getClipboardsPageForUser($userId, $pageNumber, $perPage);
+            $clipboards = $this->service->getClipboardsPageForUser($userId, $pageNumber, $perPage, $filters);
         }
 
         $traffic = $this->service->getTodayTraffic();
@@ -53,6 +60,7 @@ class HomeController extends Controller
                 'current' => $pageNumber,
                 'total'   => $totalPages,
             ],
+            'filters'      => $filters,
             'extraCss'     => ['channels.css'],
             'showNav'      => true,
             'showActions'  => $isLoggedIn,
