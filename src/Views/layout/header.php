@@ -56,7 +56,7 @@
                             <div id="notifList" class="notif-list"></div>
                         </div>
                     </div>
-                    <span><?= htmlspecialchars($_SESSION['username']) ?></span>
+                    <a href="/profile" class="header-username"><?= htmlspecialchars($_SESSION['username']) ?></a>
                     <a href="/logout" class="btn btn-outline">Изход</a>
                 <?php else: ?>
                     <a href="/login" class="btn btn-outline">Вход</a>

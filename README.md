@@ -9,5 +9,5 @@ run app
 
 migrations
 
-0. Open php.ini and uncomment extension=pdo_mysql as well as extension_dir = "ext"
+0. Open php.ini and uncomment extension=pdo_mysql, extension=openssl, as well as extension_dir = "ext"
 1. php src/Database/migrate.php
