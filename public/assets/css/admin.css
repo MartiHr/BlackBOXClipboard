@@ -8,7 +8,7 @@
     font-size: 1.6rem;
     font-weight: 600;
     margin-bottom: 24px;
-    color: var(--text-primary);
+    color: var(--on-surface);
 }
 
 .admin-cards {
@@ -18,8 +18,8 @@
 }
 
 .admin-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
     border-radius: 12px;
     padding: 24px;
     display: flex;
@@ -29,18 +29,18 @@
 
 .admin-card-icon {
     font-size: 2rem;
-    color: var(--accent);
+    color: var(--primary);
 }
 
 .admin-card h2 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--on-surface);
 }
 
 .admin-card p {
     font-size: 0.9rem;
-    color: var(--text-secondary);
+    color: var(--on-surface-variant);
     line-height: 1.5;
 }
 
