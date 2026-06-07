@@ -1,0 +1,9 @@
+.env
+.git
+.gitignore
+.gitattributes
+docker-compose.yaml
+README.md
+AGENTS.md
+LICENSE
+storage/

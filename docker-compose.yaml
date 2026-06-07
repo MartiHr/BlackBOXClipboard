@@ -27,5 +27,24 @@ services:
       PMA_USER: ${MYSQL_USER}
       PMA_PASSWORD: ${MYSQL_PASSWORD}
 
+  web:
+    build: .
+    container_name: blackbox-web
+    restart: unless-stopped
+
+    ports:
+      - "8000:80"
+
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+
+    depends_on:
+      mysql:
+        condition: service_started
+
+    volumes:
+      - .:/var/www/html
+
 volumes:
   mysql_data:
