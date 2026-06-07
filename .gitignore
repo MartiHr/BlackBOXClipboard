@@ -475,3 +475,6 @@ composer.lock
 
 /temp_files/*
 /storage
+
+# Environment
+.env
