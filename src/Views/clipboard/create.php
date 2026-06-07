@@ -43,6 +43,14 @@
 
                     <div class="form-group">
                         <label>Позволени типове ресурси</label>
+                        <div class="resource-actions select-all-container">
+                            <label class="resource-option">
+                                <input type="checkbox" id="toggleResourceTypes">
+                                <div class="resource-info">
+                                    <span class="resource-label" id="toggleResourceTypesLabel">Избери всички</span>
+                                </div>
+                            </label>
+                        </div>
                         <div class="resource-grid">
                             <?php if (!empty($resourceTypes)): ?>
                                 <?php foreach ($resourceTypes as $type): ?>

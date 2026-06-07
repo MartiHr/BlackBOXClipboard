@@ -11,6 +11,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var form = document.getElementById('createForm');
     var submitBtn = form.querySelector('button[type="submit"]');
+    var toggleTypesCheckbox = document.getElementById('toggleResourceTypes');
+    var toggleTypesLabel = document.getElementById('toggleResourceTypesLabel');
+
+    function updateToggleLabel(allChecked) {
+        toggleTypesLabel.textContent = allChecked ? 'Премахни всички' : 'Избери всички';
+    }
+
+    function syncToggleLabel() {
+        var checkboxes = Array.from(document.querySelectorAll('input[name="types[]"]'));
+        var allChecked = checkboxes.length > 0 && checkboxes.every(function(checkbox) { return checkbox.checked; });
+        toggleTypesCheckbox.checked = allChecked;
+        updateToggleLabel(allChecked);
+    }
+
+    toggleTypesCheckbox.addEventListener('change', function() {
+        var checkboxes = Array.from(document.querySelectorAll('input[name="types[]"]'));
+        checkboxes.forEach(function(checkbox) { checkbox.checked = toggleTypesCheckbox.checked; });
+        updateToggleLabel(toggleTypesCheckbox.checked);
+    });
+
+    document.querySelectorAll('input[name="types[]"]').forEach(function(checkbox) {
+        checkbox.addEventListener('change', syncToggleLabel);
+    });
+
+    syncToggleLabel();
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();

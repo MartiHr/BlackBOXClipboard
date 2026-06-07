@@ -136,6 +136,10 @@
     }
 }
 
+.select-all-container {
+    margin-bottom: var(--spacing-md);
+}
+
 label.resource-option {
     display: flex;
     align-items: center;
