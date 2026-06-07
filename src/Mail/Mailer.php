@@ -2,73 +2,103 @@
 
 class Mailer
 {
-    private static function smtpSend(string $to, string $subject, string $body): bool
+    public static function send(string $to, string $subject, string $body): bool
     {
-        $host = SMTP_HOST;
-        $port = SMTP_PORT;
-        $user = SMTP_USER;
-        $pass = SMTP_PASS;
-
-        $errno = 0;
-        $errstr = '';
-
-        $conn = @stream_socket_client(
-            'tcp://' . $host . ':' . $port,
-            $errno,
-            $errstr,
-            15
-        );
-
-        if (!$conn) {
+        if (!extension_loaded('openssl')) {
             return false;
         }
 
-        $res = self::readReply($conn);
+        try {
+            $ok = self::smtpSend($to, $subject, $body);
+            self::log("Send to $to: " . ($ok ? 'OK' : 'FAIL'));
+            return $ok;
+        } catch (\Throwable $e) {
+            self::log("Exception: " . $e->getMessage());
+            return false;
+        }
+    }
 
-        self::sendCmd($conn, 'EHLO localhost');
-        self::readReply($conn);
+    private static function smtpSend(string $to, string $subject, string $body): bool
+    {
+        $host = SMTP_HOST;
+        $port = (int) (defined('SMTP_SSL_PORT') ? SMTP_SSL_PORT : 465);
+        $user = SMTP_USER;
+        $pass = SMTP_PASS;
 
-        self::sendCmd($conn, 'STARTTLS');
-        self::readReply($conn);
+        $ctx = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
 
-        $crypto = @stream_socket_enable_crypto($conn, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
-        if (!$crypto) {
+        $errno = 0;
+        $errstr = '';
+        $conn = @stream_socket_client('ssl://' . $host . ':' . $port, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $ctx);
+        if (!$conn) {
+            self::log("SSL connect failed: $errstr ($errno)");
+            return false;
+        }
+
+        @stream_set_timeout($conn, 30);
+
+        if (!self::expect($conn, 220)) {
+            self::log("Banner not OK");
             fclose($conn);
             return false;
         }
 
         self::sendCmd($conn, 'EHLO localhost');
-        self::readReply($conn);
+        if (!self::expect($conn, 250)) {
+            fclose($conn);
+            return false;
+        }
 
         $auth = base64_encode("\0" . $user . "\0" . $pass);
         self::sendCmd($conn, 'AUTH PLAIN ' . $auth);
-        self::readReply($conn);
+        if (!self::expect($conn, 235)) {
+            self::log("AUTH failed");
+            fclose($conn);
+            return false;
+        }
 
         self::sendCmd($conn, 'MAIL FROM:<' . MAIL_FROM . '>');
-        self::readReply($conn);
+        if (!self::expect($conn, 250)) {
+            fclose($conn);
+            return false;
+        }
 
         self::sendCmd($conn, 'RCPT TO:<' . $to . '>');
-        self::readReply($conn);
+        if (!self::expect($conn, 250)) {
+            fclose($conn);
+            return false;
+        }
 
         self::sendCmd($conn, 'DATA');
-        self::readReply($conn);
+        if (!self::expect($conn, 354)) {
+            fclose($conn);
+            return false;
+        }
 
+        $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
         $headers = 'MIME-Version: 1.0' . "\r\n"
                  . 'Content-Type: text/plain; charset=UTF-8' . "\r\n"
                  . 'From: ' . MAIL_FROM_NAME . ' <' . MAIL_FROM . '>' . "\r\n"
                  . 'To: <' . $to . '>' . "\r\n"
-                 . 'Subject: ' . $subject . "\r\n"
+                 . 'Subject: ' . $encodedSubject . "\r\n"
                  . 'X-Mailer: PHP/' . phpversion() . "\r\n"
                  . 'Date: ' . date('r') . "\r\n";
-
         $body = wordwrap($body, 70, "\r\n");
 
-        fwrite($conn, $headers . "\r\n" . $body . "\r\n.");
-        self::readReply($conn);
+        fwrite($conn, $headers . "\r\n" . $body . "\r\n.\r\n");
+        if (!self::expect($conn, 250)) {
+            self::log("DATA rejected");
+            fclose($conn);
+            return false;
+        }
 
         self::sendCmd($conn, 'QUIT');
         fclose($conn);
-
         return true;
     }
 
@@ -80,7 +110,7 @@ class Mailer
     private static function readReply($conn): string
     {
         $res = '';
-        while ($line = fgets($conn, 512)) {
+        while ($line = @fgets($conn, 512)) {
             $res .= $line;
             if (isset($line[3]) && $line[3] === ' ') {
                 break;
@@ -89,12 +119,22 @@ class Mailer
         return $res;
     }
 
-    public static function send(string $to, string $subject, string $body): bool
+    private static function expect($conn, int $code): bool
     {
-        try {
-            return self::smtpSend($to, $subject, $body);
-        } catch (\Throwable $e) {
-            return false;
+        $reply = self::readReply($conn);
+        $got = (int) substr($reply, 0, 3);
+        if ($got !== $code) {
+            self::log("Expected $code, got: " . trim($reply));
         }
+        return $got === $code;
+    }
+
+    private static function log(string $msg): void
+    {
+        $logDir = __DIR__ . '/../../storage/logs';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0775, true);
+        }
+        @file_put_contents($logDir . '/mail.log', date('Y-m-d H:i:s') . ' ' . $msg . "\n", FILE_APPEND);
     }
 }
