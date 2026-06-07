@@ -152,6 +152,25 @@ class ClipboardRepository extends BaseRepository
         return $result ?: null;
     }
 
+    public function getByShareCode(string $shareCode): ?array
+    {
+        if (!$this->hasColumn('share_code')) {
+            return null;
+        }
+
+        $columns = ['id', 'name', 'description', 'owner_id', 'visibility', 'mode', 'created_at', 'share_code'];
+
+        $stmt = $this->query(
+            'SELECT ' . implode(', ', $columns) . '
+             FROM clipboards
+             WHERE share_code = :share_code',
+            [':share_code' => $shareCode]
+        );
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
     public function getItemsByClipboardId(int $clipboardId, int $limit = 10): array
     {
         $stmt = $this->query(

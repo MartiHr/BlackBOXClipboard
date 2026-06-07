@@ -113,10 +113,23 @@ class ClipboardService
         return $this->itemRepo->getById($id);
     }
 
+    public function getClipboardByShareCode(string $shareCode): ?array
+    {
+        return $this->clipRepo->getByShareCode($shareCode);
+    }
+
     public function getClipboardItems(int $clipboardId, int $limit = 50): array
     {
-        $items = $this->itemRepo->getByClipboardId($clipboardId, $limit);
+        return $this->formatItems($this->itemRepo->getByClipboardId($clipboardId, $limit));
+    }
 
+    public function getNewClipboardItems(int $clipboardId, int $lastId, int $limit = 50): array
+    {
+        return $this->formatItems($this->itemRepo->getNewItemsByClipboardId($clipboardId, $lastId, $limit));
+    }
+
+    private function formatItems(array $items): array
+    {
         return array_map(function ($item) {
             $content = $item['content'] ?? '';
             $displayType = $this->detectType($content);
