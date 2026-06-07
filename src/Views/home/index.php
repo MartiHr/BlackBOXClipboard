@@ -125,12 +125,11 @@
                 </div>
                 <div class="stats-value-box">
                     <span class="stats-large-num"><?= htmlspecialchars($traffic['display']) ?></span>
-                    <span class="status-text"><?= htmlspecialchars($traffic['count']) ?> елемента днес</span>
                 </div>
             </div>
 
             <div class="stats-card stats-card-vertical">
-                <span class="progress-bar-label">Свързани възли</span>
-                <span class="stats-large-num"><?= count($clipboards) ?></span>
+                <span class="progress-bar-label">Елемента днес</span>
+                <span class="stats-large-num"><?= htmlspecialchars($traffic['count']) ?></span>
             </div>
         </section>
