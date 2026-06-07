@@ -32,12 +32,8 @@ $gcService = new ClipboardService(
 $gcService->runGC();
 unset($gcService);
 
-// 2. Включваме рутера
 require_once __DIR__ . '/Router.php';
 $router = new Router($pdo);
-
-// 3. РЕГИСТРИРАМЕ СТРАНИЦИТЕ (Точно тук добавяш новите неща по същия начин!)
-// Начин на писане: add('име_в_URL', 'ИмеНаКонтролер', 'метод_в_контролера')
 
 $router->get('home', 'HomeController', 'index');
 $router->get('clipboard', 'ClipboardController', 'show');
@@ -65,14 +61,9 @@ $router->get('profile', 'ProfileController', 'show');
 $router->get('admin', 'AdminController', 'index');
 $router->get('admin/export', 'AdminController', 'export');
 $router->post('admin/import', 'AdminController', 'import');
-// $router->get('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
-// $router->post('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 
-// 4. ОПРЕДЕЛЯМЕ ТЕКУЩАТА СТРАНИЦА от URL
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $uri = trim($uri, '/');
 $page = $uri ?: 'home';
 
-// 5. ИЗПЪЛНЕНИЕ
-// Рутерът сам ще направи "new AuthController($pdo)" и ще извика правилния метод!
 $router->dispatch($page);
