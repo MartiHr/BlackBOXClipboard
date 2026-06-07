@@ -100,6 +100,16 @@
                             <option value="image">Изображение</option>
                             <option value="file">Файл</option>
                         </select>
+                        <select id="lifespanSelector" class="type-selector" title="Автоматично изтриване">
+                            <option value="">Без срок</option>
+                            <option value="60">1 минута</option>
+                            <option value="600">10 минути</option>
+                            <option value="3600">1 час</option>
+                            <option value="14400">4 часа</option>
+                            <option value="86400">1 ден</option>
+                            <option value="604800">7 дни</option>
+                            <option value="2592000">30 дни</option>
+                        </select>
                         <span class="input-type-hint" id="typeHint">Определяне на типа...</span>
                     </div>
                     <button class="btn btn-primary btn-fit" id="shareBtn">Сподели</button>

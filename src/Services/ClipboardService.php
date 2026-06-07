@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../Repositories/ItemRepository.php';
 require_once __DIR__ . '/../Repositories/SubscriptionRepository.php';
 require_once __DIR__ . '/../Repositories/NotificationRepository.php';
+require_once __DIR__ . '/../Repositories/ExpirationRepository.php';
 require_once __DIR__ . '/../Mail/Mailer.php';
 
 class ClipboardService
@@ -12,6 +13,7 @@ class ClipboardService
     private ItemRepository $itemRepo;
     private SubscriptionRepository $subRepo;
     private NotificationRepository $notifRepo;
+    private ExpirationRepository $expRepo;
     private PDO $db;
 
     public function __construct(
@@ -24,6 +26,7 @@ class ClipboardService
         $this->itemRepo = new ItemRepository($db);
         $this->subRepo = new SubscriptionRepository($db);
         $this->notifRepo = new NotificationRepository($db);
+        $this->expRepo = new ExpirationRepository($db);
         $this->db = $db;
     }
 
@@ -207,6 +210,19 @@ class ClipboardService
             }
         }
 
+        $expiresIn = $data['expires_in'] ?? null;
+        if ($expiresIn) {
+            $seconds = (int) $expiresIn;
+            if ($seconds > 0) {
+                $this->expRepo->create([
+                    'clipboard_share_item_id' => $itemId,
+                    'expires_at' => date('Y-m-d H:i:s', time() + $seconds),
+                    'max_views' => null,
+                    'one_time' => 0,
+                ]);
+            }
+        }
+
         $subscribers = $this->subRepo->getSubscribers($clipboardId);
         foreach ($subscribers as $sub) {
             $subUserId = (int) $sub['user_id'];
@@ -299,6 +315,60 @@ class ClipboardService
             'percent' => $percent,
             'count' => $count,
         ];
+    }
+
+    public function runGC(): void
+    {
+        $expired = $this->expRepo->getExpired();
+        foreach ($expired as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+
+            $subscribers = $this->subRepo->getSubscribers((int) $e['clipboard_id']);
+            foreach ($subscribers as $sub) {
+                $this->notifRepo->create([
+                    'user_id' => (int) $sub['user_id'],
+                    'clipboard_id' => (int) $e['clipboard_id'],
+                    'clipboard_share_item_id' => (int) $e['clipboard_share_item_id'],
+                    'type' => 'item_expired',
+                    'message' => 'Запис изтече в клипборд',
+                ]);
+            }
+
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
+
+        $maxViewed = $this->expRepo->getMaxViewed();
+        foreach ($maxViewed as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
+
+        $oneTime = $this->expRepo->getOneTimeConsumed();
+        foreach ($oneTime as $e) {
+            $this->expRepo->markExpired((int) $e['id']);
+            $item = $this->itemRepo->getById((int) $e['clipboard_share_item_id']);
+            if ($item && !empty($item['file_path'])) {
+                $oldPath = UPLOADS_DIR . '/' . basename($item['file_path']);
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $this->itemRepo->deleteById((int) $e['clipboard_share_item_id']);
+        }
     }
 
     public function deleteItem(int $itemId, int $userId): void

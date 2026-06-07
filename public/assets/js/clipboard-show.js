@@ -178,11 +178,15 @@ document.addEventListener('DOMContentLoaded', function() {
         shareBtn.disabled = true;
         shareBtn.textContent = 'Изпращане...';
 
+        var lifespanEl = document.getElementById('lifespanSelector');
+        var expiresIn = lifespanEl ? lifespanEl.value : '';
+
         var payload = {
             clipboard_id: clipboardId,
             content: content
         };
         if (type) payload.type = type;
+        if (expiresIn) payload.expires_in = parseInt(expiresIn);
 
         fetch('/clipboard/item/create', {
             method: 'POST',
