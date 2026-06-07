@@ -275,6 +275,11 @@ class ClipboardService
         $this->itemRepo->deleteById($itemId);
     }
 
+    public function getAllowedResourceTypesForClipboard(int $clipboardId): array
+    {
+        return $this->clipRepo->getAllowedResourceTypes($clipboardId);
+    }
+
     private function detectType(string $content): string
     {
         $trimmed = trim($content);
