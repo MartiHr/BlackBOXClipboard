@@ -41,6 +41,10 @@
     margin-bottom: var(--spacing-xl);
 }
 
+.allowed-types-section {
+    margin-bottom: var(--spacing-lg);
+}
+
 @media (max-width: 640px) {
     .clipboard-meta-grid {
         grid-template-columns: 1fr;
@@ -67,6 +71,23 @@
 .meta-card strong {
     font-size: 16px;
     font-weight: 600;
+}
+
+.allowed-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.type-badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary-container, #dde5ff);
+    color: var(--primary, #0057cd);
+    white-space: nowrap;
 }
 
 /* Input Area */

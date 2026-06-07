@@ -29,12 +29,23 @@
                 <div class="meta-card">
                     <span class="meta-label">Обекти</span>
                     <strong><?= count($items) ?></strong>
-                </div>
-                <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
+                </div>                <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
                 <button class="btn btn-outline btn-fit share-url-btn" title="Копирай връзката">
                     <span class="material-symbols-outlined">share</span> Сподели
                 </button>
                 <?php endif; ?>
+            </div>
+            <div class="allowed-types-section">
+                <span class="meta-label">Разрешени типове</span>
+                <div class="allowed-types">
+                    <?php if (!empty($allowedTypes)): ?>
+                        <?php foreach ($allowedTypes as $type): ?>
+                            <span class="type-badge"><?= htmlspecialchars($type['name']) ?></span>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <span class="type-badge">Всички типове</span>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <?php if ($canPost): ?>

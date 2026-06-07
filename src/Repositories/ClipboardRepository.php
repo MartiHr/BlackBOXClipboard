@@ -141,4 +141,18 @@ class ClipboardRepository extends BaseRepository
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getAllowedResourceTypes(int $clipboardId): array
+    {
+        $stmt = $this->query(
+            'SELECT rt.id, rt.name, rt.category
+            FROM clipboard_allowed_resource_types cart
+            JOIN resource_types rt ON cart.resource_type_id = rt.id
+            WHERE cart.clipboard_id = :clipboard_id
+            ORDER BY rt.name ASC',
+            [':clipboard_id' => $clipboardId]
+        );
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

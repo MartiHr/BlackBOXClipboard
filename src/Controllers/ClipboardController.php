@@ -64,12 +64,14 @@ class ClipboardController extends Controller
 
         $itemLimit = ($clipboard['mode'] ?? 'multi') === 'single' ? 1 : 50;
         $items = $this->service->getClipboardItems($id, $itemLimit);
+        $allowedTypes = $this->service->getAllowedResourceTypesForClipboard($id);
 
         $canPost = $isLoggedIn && ($isPublic || $isOwner);
 
         $this->render('clipboard/show', [
             'clipboard'   => $clipboard,
             'items'       => $items,
+            'allowedTypes' => $allowedTypes,
             'isOwner'     => $isOwner,
             'canPost'     => $canPost,
             'extraCss'    => ['auth.css', 'show.css'],
