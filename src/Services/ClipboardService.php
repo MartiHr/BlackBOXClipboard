@@ -291,6 +291,20 @@ class ClipboardService
         }
 
         if (str_starts_with($trimmed, 'data:')) {
+            if (preg_match('/^data:([^;]+);base64,/', $trimmed, $m)) {
+                $mime = strtolower($m[1]);
+                if (preg_match('/^(text\/|application\/(json|xml|javascript|x-javascript|x-php|x-shellscript|x-sh|x-python|x-java-source|x-csrc|x-c\+\+src))/i', $mime)) {
+                    return 'code';
+                }
+            }
+
+            if (preg_match('/^data:.*;base64,(.*)$/', $trimmed, $m)) {
+                $decoded = base64_decode($m[1], true);
+                if ($decoded !== false && preg_match('/\b(function|class|if|else|for|while|foreach|switch|case|return|echo|print|require|include)\b|[{};]|<\?php|^(import|export|const|let|var|def|lambda)\s/i', $decoded)) {
+                    return 'code';
+                }
+            }
+
             return 'file';
         }
 

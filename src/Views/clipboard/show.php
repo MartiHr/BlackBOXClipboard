@@ -177,6 +177,10 @@
             var currentFileName = '';
             var currentFileType = '';
 
+            // Allowed types from PHP
+            const allowedTypes = <?= !empty($allowedTypes) ? json_encode(array_column($allowedTypes, 'category')) : '[]' ?>;
+            const hasRestrictions = allowedTypes.length > 0;
+
             function detectType(text) {
                 const t = text.trim();
                 if (!t) return '';
@@ -188,11 +192,38 @@
                 return 'text';
             }
 
+            function detectFileType(fileName, mimeType) {
+                const name = (fileName || '').toLowerCase();
+                const ext = name.includes('.') ? name.split('.').pop() : '';
+                const codeExts = ['php','js','ts','tsx','jsx','html','css','sql','json','xml','md','yaml','yml','py','java','c','cpp','cs','rb','go','rs','sh','bash','ps1','swift','dart','kt','kts'];
+
+                if (mimeType && mimeType.startsWith('image/')) {
+                    return 'image';
+                }
+                if (mimeType && (/\b(json|xml|javascript|x-javascript|x-php|x-shellscript|x-sh|x-python|x-java-source|x-csrc|x-c\+\+src)\b/i.test(mimeType) || mimeType.startsWith('text/'))) {
+                    if (codeExts.includes(ext) || /json|xml|html|css|js|ts|jsx|tsx|php|py|java|c|cpp|cs|rb|go|rs|sh|bash|ps1|swift|dart|kt|kts/.test(ext)) {
+                        return 'code';
+                    }
+                    return 'text';
+                }
+                if (codeExts.includes(ext)) {
+                    return 'code';
+                }
+                if (['txt','md','log','ini','cfg','conf'].includes(ext)) {
+                    return 'text';
+                }
+                if (['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) {
+                    return 'image';
+                }
+                return 'file';
+            }
+
             const typeLabels = { text: 'Текст', link: 'Линк', code: 'Код', image: 'Изображение', file: 'Файл' };
 
             function updateTypeHint() {
                 if (currentFileData) {
-                    typeHint.textContent = 'Качен файл: ' + currentFileName;
+                    const fileType = detectFileType(currentFileName, currentFileType);
+                    typeHint.textContent = 'Качен файл: ' + currentFileName + ' (' + typeLabels[fileType] + ')';
                     return;
                 }
                 const type = detectType(pasteInput.value);
@@ -295,15 +326,29 @@
             });
 
             shareBtn.addEventListener('click', function() {
-                var content, type;
+                var content, type, detectedType;
 
                 if (currentFileData) {
                     content = currentFileData;
-                    type = typeSelector.value === 'auto' ? null : typeSelector.value;
+                    if (typeSelector.value === 'auto') {
+                        detectedType = detectFileType(currentFileName, currentFileType);
+                        type = null;
+                    } else {
+                        type = typeSelector.value;
+                        detectedType = type;
+                    }
                 } else {
                     content = pasteInput.value.trim();
                     if (!content) return;
+                    detectedType = detectType(content);
                     type = typeSelector.value === 'auto' ? null : typeSelector.value;
+                }
+
+                // Validate against allowed types
+                if (hasRestrictions && !allowedTypes.includes(detectedType)) {
+                    document.getElementById('validation-error-text').textContent = 'Тип "' + detectedType + '" не е разрешен. Разрешени типове: ' + allowedTypes.join(', ');
+                    document.getElementById('validation-modal').classList.add('open');
+                    return;
                 }
 
                 shareBtn.disabled = true;
@@ -481,6 +526,19 @@
             </div>
         </div>
 
+        <div id="validation-modal" class="modal-overlay">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <span class="material-symbols-outlined modal-icon">error</span>
+                    <h3>Тип не е разрешен</h3>
+                </div>
+                <p class="modal-body" id="validation-error-text"></p>
+                <div class="modal-actions">
+                    <button id="validation-close-btn" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             document.getElementById('delete-confirm-btn').addEventListener('click', function() {
                 if (!pendingDeleteId) return;
@@ -507,5 +565,13 @@
 
             document.getElementById('delete-modal').addEventListener('click', function(e) {
                 if (e.target === this) hideDeleteModal();
+            });
+
+            document.getElementById('validation-close-btn').addEventListener('click', function() {
+                document.getElementById('validation-modal').classList.remove('open');
+            });
+
+            document.getElementById('validation-modal').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('open');
             });
         </script>
