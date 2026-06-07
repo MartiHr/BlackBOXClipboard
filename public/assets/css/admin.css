@@ -47,3 +47,37 @@
 .admin-card .form-group {
     margin-bottom: 0;
 }
+
+/* File input styling */
+.admin-card input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--outline-variant);
+    border-radius: 8px;
+    background: var(--surface-container-lowest);
+    color: var(--on-surface);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.admin-card input[type="file"]::file-selector-button {
+    padding: 6px 14px;
+    border: 1px solid var(--outline-variant);
+    border-radius: 6px;
+    background: var(--surface-container);
+    color: var(--on-surface);
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background 0.2s;
+}
+
+.admin-card input[type="file"]::file-selector-button:hover {
+    background: var(--surface-container-highest);
+}
+
+.admin-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
