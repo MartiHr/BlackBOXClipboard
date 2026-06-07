@@ -11,3 +11,8 @@ migrations
 
 0. Open php.ini and uncomment extension=pdo_mysql, extension=openssl, as well as extension_dir = "ext"
 1. php src/Database/migrate.php
+
+
+admin
+php promote.php <username> — промотира потребител до admin.
+php promote.php demote <username> — сваля до обикновен потреби

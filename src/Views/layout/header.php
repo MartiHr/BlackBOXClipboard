@@ -36,6 +36,9 @@
                 <a href="/" <?= ($currentPage === 'home') ? 'class="active"' : '' ?>>Клипборди</a>
                 <?php if (!empty($_SESSION['user_id'])): ?>
                     <a href="/clipboard/create">Нов клипборд</a>
+                    <?php if (($_SESSION['role'] ?? null) === 'admin'): ?>
+                        <a href="/admin" <?= ($currentPage === 'admin') ? 'class="active"' : '' ?>>Админ</a>
+                    <?php endif; ?>
                 <?php else: ?>
                     <a href="/clipboard/share">Следвай клипборд</a>
                 <?php endif; ?>

@@ -60,6 +60,9 @@ $router->get('register', 'AuthController', 'registerGet');
 $router->post('register', 'AuthController', 'registerPost');
 $router->get('logout', 'AuthController', 'logout');
 $router->get('profile', 'ProfileController', 'show');
+$router->get('admin', 'AdminController', 'index');
+$router->get('admin/export', 'AdminController', 'export');
+$router->post('admin/import', 'AdminController', 'import');
 // $router->get('clipboard', 'ClipboardController', 'show'); // Показва конкретен канал
 // $router->post('copy', 'ShareController', 'handleCopy');    // Поема качването на данни (POST)
 

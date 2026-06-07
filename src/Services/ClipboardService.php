@@ -371,7 +371,7 @@ class ClipboardService
         }
     }
 
-    public function deleteItem(int $itemId, int $userId): void
+    public function deleteItem(int $itemId, int $userId, bool $isAdmin = false): void
     {
         $item = $this->itemRepo->getById($itemId);
         if (!$item) {
@@ -383,7 +383,7 @@ class ClipboardService
             throw new Exception('Clipboard not found');
         }
 
-        if ((int) $clipboard['owner_id'] !== $userId) {
+        if (!$isAdmin && (int) $clipboard['owner_id'] !== $userId) {
             throw new Exception('Not authorized to delete items in this clipboard');
         }
 

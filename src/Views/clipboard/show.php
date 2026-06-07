@@ -151,7 +151,7 @@
                                 </button>
                                 <?php endif; ?>
                                 <?php endif; ?>
-                                <?php if ($isOwner): ?>
+                                <?php if ($isOwner || $isAdmin): ?>
                                 <button class="btn btn-icon-only btn-outline delete-item-btn" data-id="<?= (int) $item['id'] ?>" title="Изтрий">
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>

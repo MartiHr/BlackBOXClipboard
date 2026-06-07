@@ -28,12 +28,19 @@ class HomeController extends Controller
         $perPage = 5;
 
         $userId = AuthService::isLoggedIn() ? (int) $_SESSION['user_id'] : null;
+        $isAdmin = AuthService::isLoggedIn() && ($_SESSION['role'] ?? null) === 'admin';
 
-        $totalClipboards = $this->service->countClipboardsForUser($userId);
-        $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
-        $pageNumber = min($pageNumber, $totalPages);
-
-        $clipboards = $this->service->getClipboardsPageForUser($userId, $pageNumber, $perPage);
+        if ($isAdmin) {
+            $totalClipboards = $this->service->countClipboards();
+            $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
+            $pageNumber = min($pageNumber, $totalPages);
+            $clipboards = $this->service->getClipboardsPage($pageNumber, $perPage);
+        } else {
+            $totalClipboards = $this->service->countClipboardsForUser($userId);
+            $totalPages = max(1, (int) ceil($totalClipboards / $perPage));
+            $pageNumber = min($pageNumber, $totalPages);
+            $clipboards = $this->service->getClipboardsPageForUser($userId, $pageNumber, $perPage);
+        }
 
         $traffic = $this->service->getTodayTraffic();
 

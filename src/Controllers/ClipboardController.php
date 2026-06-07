@@ -54,9 +54,11 @@ class ClipboardController extends Controller
         $isLoggedIn = AuthService::isLoggedIn();
         $isOwner = $isLoggedIn && (int) $clipboard['owner_id'] === $_SESSION['user_id'];
 
+        $isAdmin = $isLoggedIn && ($_SESSION['role'] ?? null) === 'admin';
+
         if (!$isPublic) {
             AuthService::requireLogin();
-            if (!$isOwner) {
+            if (!$isOwner && !$isAdmin) {
                 http_response_code(403);
                 echo 'Достъпът е отказан';
                 return;
@@ -76,6 +78,7 @@ class ClipboardController extends Controller
             'items'        => $items,
             'allowedTypes' => $allowedTypes,
             'isOwner'      => $isOwner,
+            'isAdmin'      => $isAdmin,
             'canPost'      => $canPost,
             'isSubscribed' => $isSubscribed,
             'notifyEmail'  => $notifyEmail,
@@ -316,8 +319,10 @@ class ClipboardController extends Controller
             return;
         }
 
+        $isAdmin = ($_SESSION['role'] ?? null) === 'admin';
+
         try {
-            $this->service->deleteItem($itemId, $_SESSION['user_id']);
+            $this->service->deleteItem($itemId, $_SESSION['user_id'], $isAdmin);
 
             echo json_encode(['success' => true]);
 
