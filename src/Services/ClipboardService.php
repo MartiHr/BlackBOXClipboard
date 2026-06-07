@@ -57,6 +57,8 @@ class ClipboardService
                 $this->clipRepo->attachResourceTypes($clipboardId, $allowedTypes);
             }
 
+            $this->subRepo->subscribe($clipboardId, $userId, true);
+
             $this->db->commit();
 
             return $clipboardId;
@@ -322,8 +324,6 @@ class ClipboardService
             }
         }
 
-        $this->itemRepo->deleteById($itemId);
-
         $clipboardId = (int) $item['clipboard_id'];
         $subscribers = $this->subRepo->getSubscribers($clipboardId);
         foreach ($subscribers as $sub) {
@@ -333,7 +333,7 @@ class ClipboardService
             $this->notifRepo->create([
                 'user_id' => $subUserId,
                 'clipboard_id' => $clipboardId,
-                'clipboard_share_item_id' => $itemId,
+                'clipboard_share_item_id' => null,
                 'type' => 'item_deleted',
                 'message' => 'Запис беше премахнат от "' . $clipboard['name'] . '"',
             ]);
@@ -347,6 +347,8 @@ class ClipboardService
                 );
             }
         }
+
+        $this->itemRepo->deleteById($itemId);
     }
 
     public function getAllowedResourceTypesForClipboard(int $clipboardId): array

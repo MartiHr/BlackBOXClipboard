@@ -354,6 +354,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('delete-confirm-btn').addEventListener('click', function() {
         if (!pendingDeleteId) return;
 
+        var btn = this;
+        btn.disabled = true;
+
         fetch('/clipboard/item/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -363,12 +366,28 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(d) {
             if (d.success) {
                 var card = document.querySelector('.delete-item-btn[data-id="' + pendingDeleteId + '"]');
-                if (card) card.closest('.item-card').remove();
+                if (card) {
+                    card.closest('.item-card').remove();
+                    var countEl = document.querySelector('.items-count');
+                    if (countEl) {
+                        var m = countEl.textContent.match(/(\d+)/);
+                        if (m) {
+                            var n = parseInt(m[1]) - 1;
+                            countEl.textContent = n + ' ' + (n === 1 ? 'запис' : 'записа');
+                        }
+                    }
+                }
                 hideDeleteModal();
             } else {
                 alert(d.error || 'Грешка при изтриване');
                 hideDeleteModal();
+                btn.disabled = false;
             }
+        })
+        .catch(function() {
+            alert('Грешка при свързване със сървъра');
+            hideDeleteModal();
+            btn.disabled = false;
         });
     });
 
