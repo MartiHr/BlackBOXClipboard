@@ -30,6 +30,11 @@
                     <span class="meta-label">Обекти</span>
                     <strong><?= count($items) ?></strong>
                 </div>
+                <?php if ($isOwner || $isAdmin): ?>
+                <a href="/clipboard/edit?id=<?= (int) $clipboard['id'] ?>" class="btn btn-outline btn-fit" title="Редактирай">
+                    <span class="material-symbols-outlined">edit</span> Редактирай
+                </a>
+                <?php endif; ?>
                 <?php if (($clipboard['visibility'] ?? 'private') === 'public'): ?>
                 <button class="btn btn-outline btn-fit share-url-btn" title="Копирай връзката">
                     <span class="material-symbols-outlined">share</span> Сподели

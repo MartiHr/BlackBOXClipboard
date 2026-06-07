@@ -91,6 +91,64 @@ class ClipboardController extends Controller
         ], 'Клипборд: ' . htmlspecialchars($clipboard['name']));
     }
 
+    public function editGet(): void
+    {
+        AuthService::requireLogin();
+
+        $id = (int) ($_GET['id'] ?? 0);
+        $clipboard = $this->service->getClipboardById($id);
+        if (!$clipboard) {
+            header('HTTP/1.0 404 Not Found');
+            echo 'Clipboard not found';
+            return;
+        }
+
+        $isAdmin = ($_SESSION['role'] ?? null) === 'admin';
+        if ((int) $clipboard['owner_id'] !== $_SESSION['user_id'] && !$isAdmin) {
+            http_response_code(403);
+            echo 'Достъпът е отказан';
+            return;
+        }
+
+        $allowedTypes = $this->service->getAllowedResourceTypesForClipboard($id);
+        $allTypes = $this->service->getAllResourceTypes();
+
+        $this->render('clipboard/edit', [
+            'clipboard'    => $clipboard,
+            'allowedTypes' => $allowedTypes,
+            'allTypes'     => $allTypes,
+            'extraCss'     => ['auth.css', 'create.css'],
+            'extraJs'      => ['clipboard-create.js'],
+            'showNav'      => true,
+            'showActions'  => true,
+            'currentPage'  => 'clipboard',
+            'mainClass'    => 'create-main',
+        ], 'Редактиране: ' . htmlspecialchars($clipboard['name']));
+    }
+
+    public function editPost(): void
+    {
+        header('Content-Type: application/json');
+        AuthService::requireLogin();
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $id = (int) ($input['id'] ?? 0);
+
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Clipboard ID is required']);
+            return;
+        }
+
+        try {
+            $this->service->updateClipboard($id, $input, $_SESSION['user_id']);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
     public function shareGet(): void
     {
         $code = strtoupper(trim((string) ($_GET['code'] ?? '')));

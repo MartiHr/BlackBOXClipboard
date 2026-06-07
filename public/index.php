@@ -46,6 +46,8 @@ $router->post('clipboard/create', 'ClipboardController', 'create');
 $router->post('clipboard/item/create', 'ClipboardController', 'createItem');
 $router->post('clipboard/item/delete', 'ClipboardController', 'deleteItem');
 $router->post('clipboard/subscribe', 'ClipboardController', 'toggleSubscribe');
+$router->get('clipboard/edit', 'ClipboardController', 'editGet');
+$router->post('clipboard/edit', 'ClipboardController', 'editPost');
 $router->post('clipboard/subscribe/email', 'ClipboardController', 'updateEmailPref');
 $router->get('clipboard/share', 'ClipboardController', 'shareGet');
 $router->post('clipboard/share', 'ClipboardController', 'sharePost');

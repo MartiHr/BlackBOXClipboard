@@ -72,6 +72,38 @@ class ClipboardService
         }
     }
 
+    public function updateClipboard(int $id, array $data, int $userId): void
+    {
+        $clipboard = $this->clipRepo->getById($id);
+        if (!$clipboard) {
+            throw new Exception('Clipboard not found');
+        }
+
+        $isAdmin = ($_SESSION['role'] ?? null) === 'admin';
+        if ((int) $clipboard['owner_id'] !== $userId && !$isAdmin) {
+            throw new Exception('Not authorized to edit this clipboard');
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $this->clipRepo->update($id, $data);
+
+            if (isset($data['allowed_resource_types'])) {
+                $allowedTypes = $data['allowed_resource_types'];
+                $this->clipRepo->clearAllowedResourceTypes($id);
+                if (!empty($allowedTypes)) {
+                    $existingIds = $this->typeRepo->existsMany($allowedTypes);
+                    $this->clipRepo->attachResourceTypes($id, $existingIds);
+                }
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function getAllResourceTypes(): array
     {
         return $this->typeRepo->getAllTypes();

@@ -203,6 +203,34 @@ class ClipboardRepository extends BaseRepository
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function update(int $id, array $data): void
+    {
+        $sets = [];
+        $params = [':id' => $id];
+
+        foreach (['name', 'description', 'visibility', 'mode'] as $col) {
+            if (array_key_exists($col, $data)) {
+                $sets[] = "$col = :$col";
+                $params[":$col"] = $data[$col];
+            }
+        }
+
+        if (!empty($sets)) {
+            $this->query(
+                'UPDATE clipboards SET ' . implode(', ', $sets) . ' WHERE id = :id',
+                $params
+            );
+        }
+    }
+
+    public function clearAllowedResourceTypes(int $clipboardId): void
+    {
+        $this->query(
+            'DELETE FROM clipboard_allowed_resource_types WHERE clipboard_id = :clipboard_id',
+            [':clipboard_id' => $clipboardId]
+        );
+    }
+
     public function updateShareCode(int $clipboardId, string $shareCode): void
     {
         if (!$this->hasColumn('share_code')) {
